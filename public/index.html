@@ -14,42 +14,43 @@
      הכול נבדק בשרת (netlify/functions/lib/core.mjs). -->
 <style>
 :root{
-  --bg:#F6FAF9; --top:#E0F1E6; --ink:#13372A; --muted:#4A6359; --line:#BFDCCB; --card:#FFFFFF;
-  --green:#1E7B3A; --green-2:#2FA34F; --green-soft:#E6F5EA; --section:#EEF7F3;
-  --sky:#1F5F99; --sky-soft:#EAF3FA; --sky-line:#C6DCEE;
-  --nav:#173B5C; --nav-ink:#EAF3FA; --nav-accent:#8FD6A2;
-  --lilac:#6B3FA0; --lilac-soft:#F4EFFB; --lilac-line:#DCCFF0;
-  --amber:#C77A12; --amber-soft:#FDF1DF; --coral:#C8463B; --coral-soft:#FBE9E7;
-  --shadow:rgba(10,40,25,.14); --on-accent:#FFFFFF;
-  --hero-a:#1E7B3A; --hero-b:#7CCB95;
+  /* לבנדר מוביל, ירוק מרווה (הגבעולים) כצבע משני — מתוך תמונת הרקע */
+  --bg:#FAF8FD; --top:#F1EBFA; --ink:#2A2140; --muted:#625A76; --line:#DDD3EE; --card:#FFFFFF;
+  --brand:#6A4FA3; --brand-2:#9B7FD4; --brand-soft:#F0EAFA; --section:#F6F2FC;
+  --sage:#4A7A58; --sage-soft:#EAF2EC; --sage-line:#C8DCCD;
+  --nav:#3A2C5E; --nav-ink:#F1ECFA; --nav-accent:#CDB8F0;
+  --lilac:#9C4A7E; --lilac-soft:#FAEDF4; --lilac-line:#EBCFE0;
+  --amber:#B4700F; --amber-soft:#FDF1DF; --coral:#C0453B; --coral-soft:#FBE9E7;
+  --shadow:rgba(40,25,70,.15); --on-accent:#FFFFFF;
+  --veil:rgba(58,44,94,.22);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#0E1714; --top:#14231C; --ink:#E1EEE7; --muted:#9BB4A8; --line:#2A4337; --card:#16221D;
-    --green:#6CCB8A; --green-2:#4FB86C; --green-soft:#17301F; --section:#121E19;
-    --sky:#86B9E6; --sky-soft:#16263A; --sky-line:#284562;
-    --nav:#0C1F31; --nav-ink:#DCEAF5; --nav-accent:#6CCB8A;
-    --lilac:#B99BE6; --lilac-soft:#241B33; --lilac-line:#3B2E52;
+    --bg:#14111B; --top:#1C1726; --ink:#ECE6F6; --muted:#ABA2BE; --line:#352D47; --card:#1C1825;
+    --brand:#C3AEF0; --brand-2:#9B7FD4; --brand-soft:#2A2240; --section:#18141F;
+    --sage:#93C3A0; --sage-soft:#1A2A20; --sage-line:#2F4636;
+    --nav:#100C1A; --nav-ink:#E6DEF5; --nav-accent:#B79CEB;
+    --lilac:#E5A3CB; --lilac-soft:#33202D; --lilac-line:#4D3043;
     --amber:#F0B45A; --amber-soft:#33260F; --coral:#EE8A80; --coral-soft:#381A17;
-    --shadow:rgba(0,0,0,.45); --on-accent:#0B1611;
-    --hero-a:#12482A; --hero-b:#2C6E47;
+    --shadow:rgba(0,0,0,.5); --on-accent:#1A1326;
+    --veil:rgba(16,10,28,.55);
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0E1714; --top:#14231C; --ink:#E1EEE7; --muted:#9BB4A8; --line:#2A4337; --card:#16221D;
-  --green:#6CCB8A; --green-2:#4FB86C; --green-soft:#17301F; --section:#121E19;
-  --sky:#86B9E6; --sky-soft:#16263A; --sky-line:#284562;
-  --nav:#0C1F31; --nav-ink:#DCEAF5; --nav-accent:#6CCB8A;
-  --lilac:#B99BE6; --lilac-soft:#241B33; --lilac-line:#3B2E52;
+  --bg:#14111B; --top:#1C1726; --ink:#ECE6F6; --muted:#ABA2BE; --line:#352D47; --card:#1C1825;
+  --brand:#C3AEF0; --brand-2:#9B7FD4; --brand-soft:#2A2240; --section:#18141F;
+  --sage:#93C3A0; --sage-soft:#1A2A20; --sage-line:#2F4636;
+  --nav:#100C1A; --nav-ink:#E6DEF5; --nav-accent:#B79CEB;
+  --lilac:#E5A3CB; --lilac-soft:#33202D; --lilac-line:#4D3043;
   --amber:#F0B45A; --amber-soft:#33260F; --coral:#EE8A80; --coral-soft:#381A17;
-  --shadow:rgba(0,0,0,.45); --on-accent:#0B1611;
-  --hero-a:#12482A; --hero-b:#2C6E47;
+  --shadow:rgba(0,0,0,.5); --on-accent:#1A1326;
+  --veil:rgba(16,10,28,.55);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Assistant,"Segoe UI",Arial,sans-serif;font-size:16px;line-height:1.55;direction:rtl}
 button,input,select,textarea{font:inherit;color:inherit}
-a{color:var(--sky)}
+a{color:var(--sage)}
 [hidden]{display:none!important}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .ic{display:inline-block;flex:none;vertical-align:middle;width:44px;height:44px}
@@ -60,7 +61,7 @@ a{color:var(--sky)}
 .top{display:flex;align-items:center;gap:10px 16px;min-height:54px;padding:6px 20px;background:var(--top);flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:10px;min-width:0;text-decoration:none;color:inherit}
 .brand .ic{width:34px;height:34px}
-.brand-name{font:500 16px Heebo,sans-serif;color:var(--green);white-space:nowrap}
+.brand-name{font:500 16px Heebo,sans-serif;color:var(--brand);white-space:nowrap}
 .brand-sep{width:1px;height:24px;background:currentColor;opacity:.25}
 .brand-who{font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .top-gap{flex:1 1 auto}
@@ -75,26 +76,44 @@ a{color:var(--sky)}
 .nav button.on{opacity:1;box-shadow:inset 0 -3px 0 var(--nav-accent);font-weight:500}
 .badge{min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#F2A33A;color:#2A1A00;font:700 11.5px/19px Assistant,sans-serif;text-align:center}
 
+/* הסמל הזורם */
+.flow .o,.flow .w{transform-box:view-box;transform-origin:50px 50px}
+.flow.live .o1{animation:orbA 9s ease-in-out infinite}
+.flow.live .o2{animation:orbB 11s ease-in-out infinite}
+.flow.live .o3{animation:orbC 13s ease-in-out infinite}
+.flow.live .o4{animation:orbD 7s ease-in-out infinite}
+.flow.live .o5{animation:orbB 10s ease-in-out infinite reverse}
+.flow.live .w1{animation:wave 6s linear infinite}
+.flow.live .w2{animation:wave 9s linear infinite}
+.flow.live .w3{animation:wave 12s linear infinite reverse}
+@keyframes orbA{0%,100%{transform:rotate(0) translate(0,0)}50%{transform:rotate(160deg) translate(6px,-4px)}}
+@keyframes orbB{0%,100%{transform:rotate(0) scale(1)}50%{transform:rotate(-140deg) scale(1.12)}}
+@keyframes orbC{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(8px,-10px) scale(.92)}66%{transform:translate(-6px,-4px) scale(1.08)}}
+@keyframes orbD{0%,100%{transform:rotate(0)}50%{transform:rotate(200deg) translate(-4px,6px)}}
+@keyframes wave{from{transform:translateX(0)}to{transform:translateX(-60px)}}
+@media (prefers-reduced-motion:reduce){.flow.live *{animation:none!important}}
+.brand .ic{border-radius:50%;overflow:hidden;box-shadow:0 2px 6px var(--shadow)}
+
 /* ---------- באנר ---------- */
 .hero{position:relative;margin-bottom:28px}
-.hero-band{position:relative;height:230px;overflow:hidden;background:linear-gradient(160deg,var(--hero-a),var(--hero-b))}
-.hero-band svg{position:absolute;inset:0;width:100%;height:100%}
+.hero-band{position:relative;height:250px;overflow:hidden;background:var(--nav) image-set(url("lavender.webp") type("image/webp"), url("lavender.jpg") type("image/jpeg")) center 40%/cover no-repeat}
+.hero-band::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(255,255,255,0) 40%,var(--veil))}
 .hero-row{position:relative;z-index:2;width:min(1180px,calc(100% - 32px));margin:-150px auto 0;display:flex;gap:18px;align-items:stretch}
 .hero-card,.board{background:var(--card);border-radius:18px;box-shadow:0 14px 36px var(--shadow)}
 .hero-card{flex:1.45 1 0;min-width:0;padding:24px 30px 22px;display:flex;flex-direction:column;gap:10px}
 .eyebrow{font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}
 .eyebrow b{color:var(--ink);font-weight:600}
-.hero-title{margin:0;font:300 clamp(30px,5vw,50px)/1.1 Heebo,sans-serif;letter-spacing:-.3px;color:var(--green)}
+.hero-title{margin:0;font:300 clamp(30px,5vw,50px)/1.1 Heebo,sans-serif;letter-spacing:-.3px;color:var(--brand)}
 .hero-title.empty{color:var(--muted);font-size:clamp(24px,4vw,34px)}
 .hero-about{margin:0;font-size:17px;color:var(--muted);white-space:pre-wrap}
 .hero-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:6px}
-.board{flex:1 1 0;min-width:0;padding:16px 22px;border-top:3px solid var(--sky);display:flex;flex-direction:column;gap:8px}
-.board h2{margin:0;font:500 15px Heebo,sans-serif;color:var(--sky);display:flex;align-items:center;gap:8px}
+.board{flex:1 1 0;min-width:0;padding:16px 22px;border-top:3px solid var(--sage);display:flex;flex-direction:column;gap:8px}
+.board h2{margin:0;font:500 15px Heebo,sans-serif;color:var(--sage);display:flex;align-items:center;gap:8px}
 .board h2 .ic{width:22px;height:22px}
 .board-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
 .board-list li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14.5px;cursor:pointer}
 .board-list li:last-child{border-bottom:0}
-.board-list li:hover .bl-t{color:var(--green)}
+.board-list li:hover .bl-t{color:var(--brand)}
 .board-list .ic{width:30px;height:30px}
 .bl-t{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bl-s{font-size:12.5px;color:var(--muted)}
@@ -105,7 +124,7 @@ main{min-height:40vh}
 .wrap{width:min(1180px,calc(100% - 32px));margin:0 auto}
 .narrow{width:min(860px,calc(100% - 32px));margin:0 auto}
 .sec{background:var(--section);padding:46px 0 60px;margin-top:34px}
-.sec-h{margin:0 0 28px;text-align:center;font:300 clamp(30px,5vw,42px)/1.2 Heebo,sans-serif;color:var(--green)}
+.sec-h{margin:0 0 28px;text-align:center;font:300 clamp(30px,5vw,42px)/1.2 Heebo,sans-serif;color:var(--brand)}
 .sec-sub{margin:-18px 0 26px;text-align:center;color:var(--muted)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 26px;box-shadow:0 2px 10px rgba(10,40,25,.05)}
 .card+.card{margin-top:16px}
@@ -114,29 +133,29 @@ main{min-height:40vh}
 .card-h .ic{width:52px;height:52px}
 .card-h .grow{flex:1;min-width:0}
 .card-h .sub{margin:2px 0 0;font-size:14px;color:var(--muted)}
-.back{display:inline-flex;align-items:center;gap:6px;margin:6px 0 14px;border:0;background:none;color:var(--sky);font-weight:700;cursor:pointer;padding:4px 0}
+.back{display:inline-flex;align-items:center;gap:6px;margin:6px 0 14px;border:0;background:none;color:var(--sage);font-weight:700;cursor:pointer;padding:4px 0}
 .page-h{display:flex;align-items:flex-start;gap:18px;margin:0 0 18px}
 .page-h .ic{width:64px;height:64px}
-.page-h h1{margin:0;font:300 clamp(28px,4.4vw,40px)/1.15 Heebo,sans-serif;color:var(--green)}
+.page-h h1{margin:0;font:300 clamp(28px,4.4vw,40px)/1.15 Heebo,sans-serif;color:var(--brand)}
 .page-h .sub{margin:6px 0 0;color:var(--muted);font-size:15.5px}
-.page-n{font:200 54px/1 Heebo,sans-serif;color:var(--green);min-width:64px;text-align:center}
+.page-n{font:200 54px/1 Heebo,sans-serif;color:var(--brand);min-width:64px;text-align:center}
 
 /* כפתורים */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:0 20px;border:1px solid var(--green);border-radius:999px;background:var(--green);color:var(--on-accent);font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:0 20px;border:1px solid var(--brand);border-radius:999px;background:var(--brand);color:var(--on-accent);font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;white-space:nowrap}
 .btn:hover{filter:brightness(1.06)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn .ic{width:18px;height:18px}
-.btn.sky{background:var(--sky);border-color:var(--sky)}
+.btn.sky{background:var(--sage);border-color:var(--sage)}
 .btn.lilac{background:var(--lilac);border-color:var(--lilac)}
 .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
-.btn.ghost:hover{border-color:var(--green);color:var(--green);filter:none}
+.btn.ghost:hover{border-color:var(--brand);color:var(--brand);filter:none}
 .btn.sm{min-height:32px;padding:0 13px;font-size:13.5px}
 .btn.danger{background:transparent;color:var(--coral);border-color:var(--coral-soft)}
 .btn.danger:hover{background:var(--coral-soft);filter:none}
 .mini{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap}
-.mini:hover{border-color:var(--green);color:var(--green)}
-.mini.view{border-color:var(--sky-line);color:var(--sky);background:var(--sky-soft)}
-.mini.down{border-color:var(--line);color:var(--green);background:var(--green-soft)}
+.mini:hover{border-color:var(--brand);color:var(--brand)}
+.mini.view{border-color:var(--sage-line);color:var(--sage);background:var(--sage-soft)}
+.mini.down{border-color:var(--line);color:var(--brand);background:var(--brand-soft)}
 .mini.edit{color:var(--lilac);border-color:var(--lilac-line)}
 .mini.del{color:var(--coral);border-color:var(--coral-soft)}
 .mini.icon{width:32px;padding:0}
@@ -152,15 +171,15 @@ main{min-height:40vh}
 .float{transform-origin:100px 60px;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
 .lesson:hover .float{transform:scale(1.06) rotate(-2deg) translateY(-3px)}
 .lesson-body{display:flex;flex-direction:column;gap:9px;padding:16px 18px 18px;flex:1}
-.lesson-n{font:200 36px/1 Heebo,sans-serif;color:var(--green)}
+.lesson-n{font:200 36px/1 Heebo,sans-serif;color:var(--brand)}
 .lesson-rule{width:28px;height:1px;background:var(--ink);opacity:.35}
 .lesson-title{font:400 17px/1.35 Heebo,sans-serif}
 .lesson-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:4px}
 .tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--card)}
 .tag.task{border-color:var(--lilac-line);color:var(--lilac);background:var(--lilac-soft)}
-.tag.date{border-color:var(--sky-line);color:var(--sky);background:var(--sky-soft)}
+.tag.date{border-color:var(--sage-line);color:var(--sage);background:var(--sage-soft)}
 .tag.new{border-color:#F2C37A;color:var(--amber);background:var(--amber-soft)}
-.lesson.add{align-items:center;justify-content:center;gap:10px;min-height:250px;border:1.5px dashed var(--line);background:transparent;color:var(--green);font:500 16px Heebo,sans-serif}
+.lesson.add{align-items:center;justify-content:center;gap:10px;min-height:250px;border:1.5px dashed var(--line);background:transparent;color:var(--brand);font:500 16px Heebo,sans-serif}
 .lesson.add .ic{width:58px;height:58px}
 
 /* סילבוס ברשימה בדף הבית */
@@ -168,11 +187,11 @@ main{min-height:40vh}
 .syl-preview::after{content:"";position:absolute;inset:auto 0 0 0;height:60px;background:linear-gradient(to bottom,transparent,var(--card))}
 .rich{font-size:16.5px;line-height:1.75}
 .rich p{margin:0 0 12px}
-.rich h3{font:500 19px/1.35 Heebo,sans-serif;color:var(--green);margin:20px 0 8px}
+.rich h3{font:500 19px/1.35 Heebo,sans-serif;color:var(--brand);margin:20px 0 8px}
 .rich h3:first-child{margin-top:0}
 .rich ul,.rich ol{margin:0 0 12px;padding-inline-start:24px}
 .rich li{margin:3px 0}
-.rich li::marker{color:var(--green-2)}
+.rich li::marker{color:var(--brand-2)}
 .rich a{word-break:break-all}
 .muted{color:var(--muted)}
 .hint{font-size:13.5px;color:var(--muted);margin:6px 0 0}
@@ -180,7 +199,7 @@ main{min-height:40vh}
 /* פריטים: קבצים וקישורים */
 .items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
 .item{display:flex;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);transition:border-color .15s}
-.item:hover{border-color:var(--green-2)}
+.item:hover{border-color:var(--brand-2)}
 .ft{width:46px;height:46px;flex:none;border-radius:12px;color:var(--c);background:color-mix(in srgb,var(--c) 13%,var(--card));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font:700 9.5px/1 Assistant,sans-serif;letter-spacing:.4px}
 .ft svg{width:22px;height:22px}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .ft{filter:brightness(1.35)} }
@@ -193,30 +212,30 @@ main{min-height:40vh}
 .empty{border:1.5px dashed var(--line);border-radius:14px;padding:22px;text-align:center;color:var(--muted)}
 .adder{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .prog{height:6px;border-radius:99px;background:var(--section);overflow:hidden;margin-top:6px}
-.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green-2),var(--sky));transition:width .2s}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brand-2),var(--sage));transition:width .2s}
 
 /* טפסים */
 label.f{display:block;font-size:14px;font-weight:700;color:var(--ink);margin:14px 0 5px}
 label.f small{font-weight:400;color:var(--muted)}
 input.t,select.t,textarea.t{width:100%;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:10px 13px;font-size:15.5px;color:var(--ink)}
-input.t:focus,select.t:focus,textarea.t:focus{outline:2px solid var(--green-2);outline-offset:0;border-color:transparent}
+input.t:focus,select.t:focus,textarea.t:focus{outline:2px solid var(--brand-2);outline-offset:0;border-color:transparent}
 textarea.t{min-height:120px;resize:vertical;line-height:1.6}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
 .check{display:flex;align-items:center;gap:8px;margin:12px 0 0;font-size:14.5px;cursor:pointer}
-.check input{width:18px;height:18px;accent-color:var(--green)}
+.check input{width:18px;height:18px;accent-color:var(--brand)}
 .drop{margin-top:6px;border:1.5px dashed var(--line);border-radius:14px;padding:18px;text-align:center;background:var(--bg);cursor:pointer;transition:border-color .15s,background .15s}
-.drop.over,.drop:hover{border-color:var(--green-2);background:var(--green-soft)}
+.drop.over,.drop:hover{border-color:var(--brand-2);background:var(--brand-soft)}
 .drop .ic{width:46px;height:46px;margin:0 auto 6px;display:block}
-.drop b{color:var(--green)}
+.drop b{color:var(--brand)}
 .files-chosen{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
 .files-chosen li{display:flex;align-items:center;gap:10px;font-size:14px;background:var(--section);border-radius:10px;padding:6px 10px}
 .files-chosen li .nm{flex:1;min-width:0;overflow-wrap:anywhere}
-.datechip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--sky-soft);color:var(--sky);font-weight:700;font-size:14px}
+.datechip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--sage-soft);color:var(--sage);font-weight:700;font-size:14px}
 .datechip .ic{width:18px;height:18px}
 .msg{border-radius:12px;padding:12px 15px;margin-top:14px;font-size:15px}
-.msg.ok{background:var(--green-soft);color:var(--green);border:1px solid var(--line)}
+.msg.ok{background:var(--brand-soft);color:var(--brand);border:1px solid var(--line)}
 .msg.err{background:var(--coral-soft);color:var(--coral);border:1px solid var(--coral-soft)}
-.msg.info{background:var(--sky-soft);color:var(--sky);border:1px solid var(--sky-line)}
+.msg.info{background:var(--sage-soft);color:var(--sage);border:1px solid var(--sage-line)}
 .formcols{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;align-items:start}
 .aside{background:var(--section);border-radius:18px;padding:20px 22px;font-size:14.5px;color:var(--muted)}
 .aside h3{margin:0 0 8px;font:500 17px Heebo,sans-serif;color:var(--ink);display:flex;align-items:center;gap:8px}
@@ -227,10 +246,10 @@ textarea.t{min-height:120px;resize:vertical;line-height:1.6}
 /* תיבת ההגשות וההודעות */
 .filters{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
 .filters button{height:32px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-size:13.5px;font-weight:600}
-.filters button.on{background:var(--green);border-color:var(--green);color:var(--on-accent)}
+.filters button.on{background:var(--brand);border-color:var(--brand);color:var(--on-accent)}
 .entry{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:16px 18px;display:flex;gap:14px}
 .entry+.entry{margin-top:10px}
-.entry.unseen{border-color:var(--green-2);box-shadow:inset -4px 0 0 var(--green-2)}
+.entry.unseen{border-color:var(--brand-2);box-shadow:inset -4px 0 0 var(--brand-2)}
 .entry .ava{width:42px;height:42px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font:500 17px Heebo,sans-serif;color:#fff}
 .entry-main{flex:1;min-width:0}
 .entry-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
@@ -246,29 +265,29 @@ textarea.t{min-height:120px;resize:vertical;line-height:1.6}
 
 /* קוד לסטודנטים */
 .codebox{display:flex;flex-wrap:wrap;align-items:center;gap:14px 22px}
-.bigcode{font:500 34px/1 Heebo,monospace;letter-spacing:3px;color:var(--green);background:var(--green-soft);border:1px dashed var(--green-2);border-radius:14px;padding:14px 22px;direction:ltr}
+.bigcode{font:500 34px/1 Heebo,monospace;letter-spacing:3px;color:var(--brand);background:var(--brand-soft);border:1px dashed var(--brand-2);border-radius:14px;padding:14px 22px;direction:ltr}
 .qr{background:#fff;padding:10px;border-radius:12px;width:max-content;margin-top:12px}
 .ready{white-space:pre-wrap;background:var(--section);border-radius:12px;padding:12px 14px;font-size:14.5px;margin-top:10px}
 
 /* מסך כניסה */
-.gate{min-height:100vh;display:flex;flex-direction:column}
-.gate-band{position:relative;flex:0 0 300px;overflow:hidden;background:linear-gradient(160deg,var(--hero-a),var(--hero-b))}
-.gate-band svg{position:absolute;inset:0;width:100%;height:100%}
-.gate-card{position:relative;z-index:2;width:min(480px,calc(100% - 32px));margin:-190px auto 40px;background:var(--card);border-radius:22px;box-shadow:0 18px 44px var(--shadow);padding:30px 32px 26px;text-align:center}
-.gate-card .ic.big{width:84px;height:84px;margin:-74px auto 8px;display:block;background:var(--card);border-radius:50%;padding:12px;box-shadow:0 8px 20px var(--shadow)}
-.gate-card h1{margin:4px 0 4px;font:300 32px/1.2 Heebo,sans-serif;color:var(--green)}
+.gate{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;background:var(--nav) image-set(url("lavender.webp") type("image/webp"), url("lavender.jpg") type("image/jpeg")) center 40%/cover no-repeat;}
+@media (min-width:900px) and (hover:hover){ .gate{background-attachment:fixed} }
+.gate::before{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.08),var(--veil))}
+.gate-card{position:relative;z-index:2;width:min(480px,calc(100% - 32px));margin:110px auto 30px;background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(6px);border-radius:22px;box-shadow:0 18px 44px var(--shadow);padding:30px 32px 26px;text-align:center}
+.gate-card .ic.big{width:112px;height:112px;margin:-92px auto 6px;display:block;background:var(--card);border-radius:50%;padding:7px;box-shadow:0 10px 28px var(--shadow)}
+.gate-card h1{margin:4px 0 4px;font:300 32px/1.2 Heebo,sans-serif;color:var(--brand)}
 .gate-card .who{margin:0 0 18px;color:var(--muted)}
 .codein{width:100%;text-align:center;font:500 24px Heebo,sans-serif;letter-spacing:3px;direction:ltr;padding:12px;border:1.5px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink)}
-.codein:focus{outline:2px solid var(--green-2);border-color:transparent}
+.codein:focus{outline:2px solid var(--brand-2);border-color:transparent}
 .gate-card .btn{width:100%;margin-top:14px;min-height:46px;font-size:16px}
 .gate-card .check{justify-content:center}
-.gate-foot{margin-top:auto;text-align:center;font-size:13px;color:var(--muted);padding:18px}
+.gate-foot{position:relative;text-align:center;font-size:13px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.45);padding:6px 18px 22px}
 
 /* חלון */
 dialog.dlg{border:0;border-radius:20px;padding:0;width:min(560px,calc(100% - 24px));background:var(--card);color:var(--ink);box-shadow:0 24px 60px rgba(0,0,0,.3)}
 dialog.dlg::backdrop{background:rgba(8,30,20,.45)}
 .dlg-h{display:flex;align-items:center;gap:12px;padding:18px 22px;background:var(--section);border-bottom:1px solid var(--line)}
-.dlg-h h2{margin:0;font:400 22px Heebo,sans-serif;color:var(--green);flex:1}
+.dlg-h h2{margin:0;font:400 22px Heebo,sans-serif;color:var(--brand);flex:1}
 .dlg-h .ic{width:40px;height:40px}
 .dlg-b{padding:4px 22px 6px;max-height:min(70vh,640px);overflow:auto}
 .dlg-f{display:flex;gap:8px;justify-content:flex-start;padding:14px 22px 18px;flex-wrap:wrap}
@@ -277,7 +296,7 @@ dialog.dlg::backdrop{background:rgba(8,30,20,.45)}
 .toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);background:var(--nav);color:var(--nav-ink);padding:10px 20px;border-radius:999px;font-weight:600;font-size:14.5px;opacity:0;transition:all .25s;z-index:1000;pointer-events:none;box-shadow:0 8px 20px rgba(0,0,0,.25)}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 .loading{display:flex;flex-direction:column;align-items:center;gap:12px;padding:80px 16px;color:var(--muted)}
-.spin{width:38px;height:38px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--green);animation:spin 1s linear infinite}
+.spin{width:38px;height:38px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--brand);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .fade{animation:fade .35s ease}
 @keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
@@ -300,7 +319,7 @@ footer img{height:22px;vertical-align:middle;margin-inline-start:6px;opacity:.8}
   .top{flex-wrap:nowrap}
   .nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding:0 6px;scrollbar-width:none}
   .nav button{padding:0 11px;font-size:14px}
-  .hero-band{height:170px}
+  .hero-band{height:190px}
   .hero-row{margin-top:-120px;width:calc(100% - 24px)}
   .hero-card{padding:20px 20px 18px}
   .wrap,.narrow{width:calc(100% - 32px)}
@@ -366,37 +385,57 @@ let gid = 0;
 const G = (a, b) => { const id = "g" + (++gid); return [id, `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`]; };
 const ICON = {
   // ספר פתוח — סילבוס
-  book(){ const [a, da] = G("#2FA34F", "#3C8FC4"), [b, db] = G("#7E57C2", "#3C8FC4");
-    return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><circle cx="24" cy="26" r="20" fill="#2FA34F" opacity=".1"/><path d="M6 13.5c6-2.6 11.6-2.4 17 1.2v24.6c-5.4-3.4-11-3.6-17-1z" fill="url(#${a})"/><path d="M42 13.5c-6-2.6-11.6-2.4-17 1.2v24.6c5.4-3.4 11-3.6 17-1z" fill="url(#${b})" opacity=".85"/><path d="M10 20c3.4-1 6.6-.8 9.6.8M10 25c3.4-1 6.6-.8 9.6.8M28.4 20.8c3-1.6 6.2-1.8 9.6-.8" stroke="#fff" stroke-width="1.4" stroke-linecap="round" fill="none" opacity=".75"/><circle cx="39" cy="8" r="3" fill="#F2A33A"/></svg>`; },
+  book(){ const [a, da] = G("#7FAF8A", "#9B7FD4"), [b, db] = G("#6A4FA3", "#9B7FD4");
+    return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><circle cx="24" cy="26" r="20" fill="#7FAF8A" opacity=".1"/><path d="M6 13.5c6-2.6 11.6-2.4 17 1.2v24.6c-5.4-3.4-11-3.6-17-1z" fill="url(#${a})"/><path d="M42 13.5c-6-2.6-11.6-2.4-17 1.2v24.6c5.4-3.4 11-3.6 17-1z" fill="url(#${b})" opacity=".85"/><path d="M10 20c3.4-1 6.6-.8 9.6.8M10 25c3.4-1 6.6-.8 9.6.8M28.4 20.8c3-1.6 6.2-1.8 9.6-.8" stroke="#fff" stroke-width="1.4" stroke-linecap="round" fill="none" opacity=".75"/><circle cx="39" cy="8" r="3" fill="#F2A33A"/></svg>`; },
   // שכבות — שיעורים
-  layers(){ const [a, da] = G("#3C8FC4", "#7E57C2"), [b, db] = G("#2FA34F", "#3C8FC4");
+  layers(){ const [a, da] = G("#9B7FD4", "#6A4FA3"), [b, db] = G("#7FAF8A", "#9B7FD4");
     return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><path d="M24 26 6 18l18-8 18 8z" fill="url(#${a})" opacity=".35" transform="translate(0 12)"/><path d="M24 26 6 18l18-8 18 8z" fill="url(#${a})" opacity=".6" transform="translate(0 6)"/><path d="M24 26 6 18l18-8 18 8z" fill="url(#${b})"/><circle cx="37" cy="9" r="3" fill="#F2A33A"/></svg>`; },
   // העלאה — הגשת תוצר
-  upload(){ const [a, da] = G("#2FA34F", "#1E7B3A"), [b, db] = G("#3C8FC4", "#7E57C2");
+  upload(){ const [a, da] = G("#7FAF8A", "#4F7D5C"), [b, db] = G("#9B7FD4", "#6A4FA3");
     return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><rect x="7" y="25" width="34" height="16" rx="5" fill="url(#${b})" opacity=".3"/><path d="M7 30v6a5 5 0 0 0 5 5h24a5 5 0 0 0 5-5v-6" stroke="url(#${b})" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M24 31V9m0 0-8 8m8-8 8 8" stroke="url(#${a})" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="38" cy="10" r="3" fill="#F2A33A"/></svg>`; },
   // מעטפה — הודעה למרצה
-  letter(){ const [a, da] = G("#3C8FC4", "#1F5F99"), [b, db] = G("#7E57C2", "#3C8FC4");
+  letter(){ const [a, da] = G("#9B7FD4", "#5B6FB5"), [b, db] = G("#6A4FA3", "#9B7FD4");
     return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><rect x="6" y="12" width="36" height="26" rx="6" fill="url(#${a})"/><path d="m8 15 16 12 16-12" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/><path d="M33 6c4 1 7 4 8 8" stroke="url(#${b})" stroke-width="2.6" stroke-linecap="round" fill="none"/><circle cx="42" cy="17" r="2.6" fill="#F2A33A"/></svg>`; },
   // תיבה — ההגשות
-  inbox(){ const [a, da] = G("#2FA34F", "#3C8FC4"), [b, db] = G("#7E57C2", "#B07FE0");
+  inbox(){ const [a, da] = G("#7FAF8A", "#9B7FD4"), [b, db] = G("#6A4FA3", "#D98BB5");
     return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><rect x="13" y="6" width="22" height="16" rx="3" fill="url(#${b})" opacity=".55" transform="rotate(-6 24 14)"/><path d="M6 26h11l3 5h8l3-5h11v9a6 6 0 0 1-6 6H12a6 6 0 0 1-6-6z" fill="url(#${a})"/><path d="M6 26l5-10h26l5 10" stroke="url(#${a})" stroke-width="2.4" fill="none" stroke-linejoin="round"/><circle cx="40" cy="9" r="3" fill="#F2A33A"/></svg>`; },
   // בועות שיחה — הודעות
-  chat(){ const [a, da] = G("#3C8FC4", "#7E57C2"), [b, db] = G("#2FA34F", "#8FD6A2");
+  chat(){ const [a, da] = G("#9B7FD4", "#6A4FA3"), [b, db] = G("#7FAF8A", "#C9B6EC");
     return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><path d="M8 10h22a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H17l-7 6v-6H8a5 5 0 0 1-5-5V15a5 5 0 0 1 5-5z" fill="url(#${a})"/><path d="M38 18h2a5 5 0 0 1 5 5v9a5 5 0 0 1-5 5h-1v5l-6-5h-9a5 5 0 0 1-5-5" fill="url(#${b})" opacity=".8"/><circle cx="12" cy="20" r="1.8" fill="#fff"/><circle cx="19" cy="20" r="1.8" fill="#fff"/><circle cx="26" cy="20" r="1.8" fill="#fff"/></svg>`; },
   // מפתח — קוד והגדרות
-  key(){ const [a, da] = G("#F2A33A", "#E07B39"), [b, db] = G("#2FA34F", "#3C8FC4");
-    return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><circle cx="16" cy="24" r="10" fill="url(#${a})"/><circle cx="16" cy="24" r="3.6" fill="#fff" opacity=".9"/><path d="M25 24h17m-6 0v7m-6-7v5" stroke="url(#${b})" stroke-width="3.6" stroke-linecap="round" fill="none"/><circle cx="38" cy="11" r="2.6" fill="#7E57C2" opacity=".8"/></svg>`; },
+  key(){ const [a, da] = G("#F2A33A", "#E39A4F"), [b, db] = G("#7FAF8A", "#9B7FD4");
+    return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><circle cx="16" cy="24" r="10" fill="url(#${a})"/><circle cx="16" cy="24" r="3.6" fill="#fff" opacity=".9"/><path d="M25 24h17m-6 0v7m-6-7v5" stroke="url(#${b})" stroke-width="3.6" stroke-linecap="round" fill="none"/><circle cx="38" cy="11" r="2.6" fill="#6A4FA3" opacity=".8"/></svg>`; },
   // כובע סיום — מסך כניסה ולוגו
-  cap(){ const [a, da] = G("#2FA34F", "#1F5F99"), [b, db] = G("#7E57C2", "#3C8FC4");
+  cap(){ const [a, da] = G("#7FAF8A", "#5B6FB5"), [b, db] = G("#6A4FA3", "#9B7FD4");
     return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><path d="M24 9 3 19l21 10 21-10z" fill="url(#${a})"/><path d="M12 24v8c0 3.5 5.4 6.5 12 6.5S36 35.5 36 32v-8l-12 5.6z" fill="url(#${b})" opacity=".85"/><path d="M41 21v10" stroke="#F2A33A" stroke-width="2.4" stroke-linecap="round"/><circle cx="41" cy="33" r="2.8" fill="#F2A33A"/></svg>`; },
-  calendar(){ const [a, da] = G("#3C8FC4", "#2FA34F");
-    return `<svg viewBox="0 0 24 24"><defs>${da}</defs><rect x="3" y="5" width="18" height="16" rx="4" fill="url(#${a})"/><path d="M3 10h18" stroke="#fff" stroke-width="1.6"/><path d="M8 3v4M16 3v4" stroke="#1F5F99" stroke-width="2" stroke-linecap="round"/></svg>`; },
-  plus(){ const [a, da] = G("#2FA34F", "#3C8FC4");
+  calendar(){ const [a, da] = G("#9B7FD4", "#7FAF8A");
+    return `<svg viewBox="0 0 24 24"><defs>${da}</defs><rect x="3" y="5" width="18" height="16" rx="4" fill="url(#${a})"/><path d="M3 10h18" stroke="#fff" stroke-width="1.6"/><path d="M8 3v4M16 3v4" stroke="#5B6FB5" stroke-width="2" stroke-linecap="round"/></svg>`; },
+  plus(){ const [a, da] = G("#7FAF8A", "#9B7FD4");
     return `<svg viewBox="0 0 48 48"><defs>${da}</defs><circle cx="24" cy="24" r="20" fill="url(#${a})" opacity=".14"/><circle cx="24" cy="24" r="14" fill="url(#${a})"/><path d="M24 17v14M17 24h14" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>`; },
-  sparkle(){ const [a, da] = G("#F2A33A", "#7E57C2");
-    return `<svg viewBox="0 0 24 24"><defs>${da}</defs><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z" fill="url(#${a})"/><circle cx="19" cy="19" r="2" fill="#2FA34F"/></svg>`; },
+  sparkle(){ const [a, da] = G("#F2A33A", "#6A4FA3");
+    return `<svg viewBox="0 0 24 24"><defs>${da}</defs><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z" fill="url(#${a})"/><circle cx="19" cy="19" r="2" fill="#7FAF8A"/></svg>`; },
 };
-const icon = (name, cls) => el("span", { class: "ic" + (cls ? " " + cls : ""), "aria-hidden": "true", html: ICON[name]() });
+// הסמל של האתר: צורה מופשטת וזורמת — כדורי צבע רכים שנעים זה סביב זה, וגלים שחולפים דרכם.
+// animated = בתנועה (מסך הכניסה). בלי תנועה למי שביקש/ה להפחית תנועה (prefers-reduced-motion).
+ICON.flow = (animated) => {
+  const id = "f" + (++gid);
+  return `<svg viewBox="0 0 100 100" class="flow${animated ? " live" : ""}"><defs>
+<filter id="${id}b" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="7"/></filter>
+<clipPath id="${id}c"><circle cx="50" cy="50" r="48"/></clipPath>
+<linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EFE6FB"/><stop offset="1" stop-color="#D9CBF2"/></linearGradient></defs>
+<g clip-path="url(#${id}c)"><rect width="100" height="100" fill="url(#${id}g)"/>
+<g filter="url(#${id}b)">
+<circle class="o o1" cx="36" cy="38" r="27" fill="#9B7FD4"/>
+<circle class="o o2" cx="66" cy="44" r="23" fill="#E08DBE"/>
+<circle class="o o3" cx="46" cy="70" r="24" fill="#7FB58E"/>
+<circle class="o o4" cx="70" cy="24" r="13" fill="#F4B860"/>
+<circle class="o o5" cx="24" cy="66" r="12" fill="#6E9BD8"/></g>
+<g class="w w1"><path d="M-40 56C-20 42 0 70 20 56S60 42 80 56s40 14 60 0" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" opacity=".9"/></g>
+<g class="w w2"><path d="M-40 68C-20 56 0 80 20 68S60 56 80 68s40 12 60 0" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".6"/></g>
+<g class="w w3"><path d="M-40 44C-20 34 0 54 20 44S60 34 80 44s40 10 60 0" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" opacity=".45"/></g>
+</g></svg>`;
+};
+const icon = (name, cls, arg) => el("span", { class: "ic" + (cls ? " " + cls : ""), "aria-hidden": "true", html: ICON[name](arg) });
 // איקונים קטנים בקו — לכפתורי פעולה
 const LINE = {
   eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
@@ -425,14 +464,14 @@ const FT = {
   pdf:   { label: "PDF",  icon: "file",   c: "#C8463B", bg: "#FBE9E7" },
   doc:   { label: "WORD", icon: "file",   c: "#2B6CB0", bg: "#E6F0FA" },
   ppt:   { label: "מצגת", icon: "slides", c: "#D86A1E", bg: "#FDEEDF" },
-  xls:   { label: "גיליון", icon: "table", c: "#1E7B3A", bg: "#E6F5EA" },
+  xls:   { label: "גיליון", icon: "table", c: "#4F7D5C", bg: "#E6F5EA" },
   img:   { label: "תמונה", icon: "img",   c: "#0E8A86", bg: "#E0F4F2" },
   vid:   { label: "וידאו", icon: "play",  c: "#6B3FA0", bg: "#F1EAFA" },
   aud:   { label: "שמע",  icon: "play",   c: "#8A4FB5", bg: "#F3EAFA" },
   zip:   { label: "ZIP",  icon: "zip",    c: "#5B6B66", bg: "#ECEFEE" },
   yt:    { label: "וידאו", icon: "play",  c: "#D93025", bg: "#FCE8E6" },
-  gdoc:  { label: "Drive", icon: "link",  c: "#1F5F99", bg: "#E3EEF8" },
-  link:  { label: "קישור", icon: "link",  c: "#1F5F99", bg: "#E3EEF8" },
+  gdoc:  { label: "Drive", icon: "link",  c: "#5B6FB5", bg: "#E3EEF8" },
+  link:  { label: "קישור", icon: "link",  c: "#5B6FB5", bg: "#E3EEF8" },
   other: { label: "קובץ", icon: "file",   c: "#4A6359", bg: "#EEF7F3" },
 };
 function ftOf(it){
@@ -479,20 +518,11 @@ const ARTS = [
   // נבט
   (a, b) => `<path d="M100 104V58" stroke="url(#${b})" stroke-width="5" stroke-linecap="round"/><path d="M100 70c-6-22-26-32-46-30 2 20 20 34 46 30z" fill="url(#${a})"/><path d="M100 60c4-24 24-36 48-34-2 22-22 38-48 34z" fill="url(#${b})" opacity=".85"/><ellipse cx="100" cy="106" rx="34" ry="6" fill="url(#${a})" opacity=".35"/><circle cx="158" cy="22" r="5" fill="#F2A33A"/>`,
 ];
-const PAL = [["#2FA34F", "#3C8FC4"], ["#3C8FC4", "#7E57C2"], ["#7E57C2", "#3C8FC4"], ["#2FA34F", "#8FD6A2"], ["#3C8FC4", "#2FA34F"], ["#7E57C2", "#2FA34F"]];
+const PAL = [["#7FAF8A", "#9B7FD4"], ["#9B7FD4", "#6A4FA3"], ["#6A4FA3", "#9B7FD4"], ["#7FAF8A", "#C9B6EC"], ["#9B7FD4", "#7FAF8A"], ["#6A4FA3", "#7FAF8A"]];
 function lessonArt(i){
   const [c1, c2] = PAL[i % PAL.length], [c3, c4] = PAL[(i + 2) % PAL.length];
   const [a, da] = G(c1, c2), [b, db] = G(c3, c4);
   return `<svg viewBox="0 0 200 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs>${da}${db}</defs><g class="float">${ARTS[i % ARTS.length](a, b)}</g></svg>`;
-}
-// רקע הבאנר — צורות רכות על הירוק
-function bandArt(){
-  return `<svg viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-<circle cx="1080" cy="40" r="170" fill="#fff" opacity=".07"/><circle cx="160" cy="300" r="210" fill="#fff" opacity=".06"/>
-<path d="M0 210C220 150 420 250 640 200S1000 120 1200 170" fill="none" stroke="#fff" stroke-width="2" opacity=".22"/>
-<path d="M0 240C260 190 440 270 700 225S1020 160 1200 205" fill="none" stroke="#8FD6A2" stroke-width="1.4" opacity=".35"/>
-<circle cx="930" cy="92" r="7" fill="#F2A33A" opacity=".9"/><circle cx="300" cy="70" r="4" fill="#fff" opacity=".6"/><circle cx="560" cy="48" r="3" fill="#fff" opacity=".5"/>
-<path d="M760 58c30-20 70-22 100 0" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".35"/></svg>`;
 }
 
 /* ───────── טקסט עשיר לסילבוס: # כותרת, - תבליט, 1. רשימה, **מודגש**, קישורים ───────── */
@@ -665,8 +695,7 @@ async function renderGate(note){
   code.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
   code.addEventListener("input", () => { const v = fixKeys(code.value); if (v !== code.value) code.value = v; });
   $app.append(el("div", { class: "gate fade" },
-    el("div", { class: "gate-band", html: bandArt() }),
-    el("div", { class: "gate-card" }, icon("cap", "big"),
+    el("div", { class: "gate-card" }, icon("flow", "big", true),
       el("h1", {}, pub.title || "סביבת הקורסים"),
       el("p", { class: "who" }, pub.lecturer || ""),
       el("label", { class: "f", style: "text-align:right" }, "הקוד שלך"), code, err, btn,
@@ -679,7 +708,7 @@ async function renderGate(note){
 /* ───────── אזור הניהול של המרצה: הקורסים שלי ───────── */
 function topBar(right){
   return el("header", { class: "hdr" }, el("div", { class: "top" },
-    el("a", { class: "brand", href: location.pathname }, icon("cap"), el("span", { class: "brand-name" }, "סביבת הקורסים"),
+    el("a", { class: "brand", href: location.pathname }, icon("flow"), el("span", { class: "brand-name" }, "סביבת הקורסים"),
       el("span", { class: "brand-sep" }), el("span", { class: "brand-who" }, (D && D.lecturer.name) || (C && C.lecturer) || "")),
     el("span", { class: "top-gap" }), ...right));
 }
@@ -714,7 +743,7 @@ async function renderDashboard(){
   const news = d.courses.reduce((n, c) => n + (c.newSubs || 0) + (c.newMsgs || 0), 0);
   $app.append(topBar([el("span", { class: "chip l" }, "מרצה · ניהול"), exitBtn()]),
     el("main", { class: "fade" },
-      el("section", { class: "hero" }, el("div", { class: "hero-band", html: bandArt() }),
+      el("section", { class: "hero" }, el("div", { class: "hero-band" }),
         el("div", { class: "hero-row" },
           el("div", { class: "hero-card" }, el("div", { class: "eyebrow" }, el("b", {}, d.lecturer.name), el("span", {}, "אזור הניהול")),
             el("h1", { class: "hero-title" }, "הקורסים שלי"),
@@ -876,7 +905,7 @@ function viewHome(page){
     }
   }
   page.append(el("section", { class: "hero" },
-    el("div", { class: "hero-band", html: bandArt() }),
+    el("div", { class: "hero-band" }),
     el("div", { class: "hero-row" },
       el("div", { class: "hero-card" },
         el("div", { class: "eyebrow" }, C.lecturer ? el("b", {}, C.lecturer) : null, el("span", {}, C.lessons.length ? C.lessons.length + " שיעורים" : "")),
@@ -1168,7 +1197,7 @@ function viewSubmit(page, lessonId){
 }
 
 /* כרטיס הגשה — לסטודנט/ית (ההגשות שלי) ולמרצה (תיבת ההגשות) */
-const AVA = ["#1E7B3A", "#1F5F99", "#6B3FA0", "#2FA34F", "#C77A12", "#0E8A86"];
+const AVA = ["#4F7D5C", "#5B6FB5", "#6B3FA0", "#7FAF8A", "#C77A12", "#0E8A86"];
 const avatar = (name) => { const n = String(name || "?").trim(); let h = 0; for (const ch of n) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return el("div", { class: "ava", style: "background:" + AVA[h % AVA.length] }, n.charAt(0)); };
 function subCard(s, lect, after){
   const files = el("div", { class: "entry-files" });
@@ -1325,7 +1354,7 @@ function viewSettings(page){
   const ab = el("textarea", { class: "t", style: "min-height:80px" }, C.about);
   const serr = el("div", { class: "msg err" }); serr.hidden = true;
   wrap.append(el("div", { class: "card" },
-    el("div", { class: "card-h" }, icon("cap"), el("div", { class: "grow" }, el("h2", {}, "פרטי הקורס"))),
+    el("div", { class: "card-h" }, icon("flow"), el("div", { class: "grow" }, el("h2", {}, "פרטי הקורס"))),
     field("שם הקורס", t), field("תיאור קצר", ab), serr,
     el("div", { class: "adder" }, el("button", { class: "btn", onclick: async () => {
       const d = await call("save", { patch: { title: t.value, about: ab.value } });

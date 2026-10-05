@@ -30,7 +30,9 @@ const ID_ABC = 'abcdefghijkmnpqrstuvwxyz23456789';
 const CODE_ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const randId = (n) => { let s = ''; for (const b of randomBytes(n)) s += ID_ABC[b % ID_ABC.length]; return s; };
 const newCode = () => { let s = ''; for (const b of randomBytes(8)) s += CODE_ABC[b % CODE_ABC.length]; return s.slice(0, 4) + '-' + s.slice(4); };
-export const normCode = (c) => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+// קוד שהוקלד במקלדת עברית ("שגכ..." במקום "ASD...") — ממירים לפי מיקום המקש, גם בשרת (למשל בערך של LECTURER_CODE)
+const HE_KEYS = { '/': 'Q', "'": 'W', 'ק': 'E', 'ר': 'R', 'א': 'T', 'ט': 'Y', 'ו': 'U', 'ן': 'I', 'ם': 'O', 'פ': 'P', 'ש': 'A', 'ד': 'S', 'ג': 'D', 'כ': 'F', 'ע': 'G', 'י': 'H', 'ח': 'J', 'ל': 'K', 'ך': 'L', 'ז': 'Z', 'ס': 'X', 'ב': 'C', 'ה': 'V', 'נ': 'B', 'מ': 'N', 'צ': 'M' };
+export const normCode = (c) => String(c || '').replace(/[\/'א-ת]/g, (ch) => HE_KEYS[ch] || ch).toUpperCase().replace(/[^A-Z0-9]/g, '');
 const validId = (id) => typeof id === 'string' && /^[a-z0-9]{6,20}$/.test(id);
 const validSid = (s) => typeof s === 'string' && /^[a-f0-9]{16}$/.test(s);
 const EMAIL_RE = /^[^\s@<>]{1,64}@[^\s@<>]{1,190}\.[a-z]{2,24}$/i;
@@ -191,6 +193,10 @@ export async function handle(body, ctx) {
   }
 
   const lec = await lecturer(store, env);
+  if (action === 'status') { // בדיקת הקמה: האם יש קוד מרצה ומה אורכו — בלי לחשוף את הקוד
+    const raw = env.LECTURER_CODE || '';
+    return [200, { lecturerCodeSet: !!raw, lecturerCodeLength: normCode(raw).length, ownCode: !!lec.hash, mailReady: !!(env.RESEND_API_KEY && env.MAIL_FROM) }];
+  }
   if (action === 'public') { // שם הקורס והמרצה — לדף הכניסה (לא סוד)
     const c = validId(body.cid) ? await store.get('course:' + body.cid) : null;
     return [200, { lecturer: lec.name, title: c ? c.title || '' : '', found: !!c }];
