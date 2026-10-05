@@ -1,0 +1,10 @@
+{
+  "name": "adva-course",
+  "private": true,
+  "type": "module",
+  "description": "סביבת הקורסים של ד״ר אדוה מרגליות",
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": { "node": ">=18" }
+}

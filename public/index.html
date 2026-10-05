@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>סביבת הקורסים</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@200;300;400;500;600&family=Assistant:wght@400;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- סביבת הקורסים של ד״ר אדוה מרגליות.
+     המרצה נכנסת בקוד מרצה לאזור הניהול ומוסיפה קורסים; סטודנטים נכנסים בקוד הקורס.
+     הכול נבדק בשרת (netlify/functions/lib/core.mjs). -->
+<style>
+:root{
+  --bg:#F6FAF9; --top:#E0F1E6; --ink:#13372A; --muted:#4A6359; --line:#BFDCCB; --card:#FFFFFF;
+  --green:#1E7B3A; --green-2:#2FA34F; --green-soft:#E6F5EA; --section:#EEF7F3;
+  --sky:#1F5F99; --sky-soft:#EAF3FA; --sky-line:#C6DCEE;
+  --nav:#173B5C; --nav-ink:#EAF3FA; --nav-accent:#8FD6A2;
+  --lilac:#6B3FA0; --lilac-soft:#F4EFFB; --lilac-line:#DCCFF0;
+  --amber:#C77A12; --amber-soft:#FDF1DF; --coral:#C8463B; --coral-soft:#FBE9E7;
+  --shadow:rgba(10,40,25,.14); --on-accent:#FFFFFF;
+  --hero-a:#1E7B3A; --hero-b:#7CCB95;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1714; --top:#14231C; --ink:#E1EEE7; --muted:#9BB4A8; --line:#2A4337; --card:#16221D;
+    --green:#6CCB8A; --green-2:#4FB86C; --green-soft:#17301F; --section:#121E19;
+    --sky:#86B9E6; --sky-soft:#16263A; --sky-line:#284562;
+    --nav:#0C1F31; --nav-ink:#DCEAF5; --nav-accent:#6CCB8A;
+    --lilac:#B99BE6; --lilac-soft:#241B33; --lilac-line:#3B2E52;
+    --amber:#F0B45A; --amber-soft:#33260F; --coral:#EE8A80; --coral-soft:#381A17;
+    --shadow:rgba(0,0,0,.45); --on-accent:#0B1611;
+    --hero-a:#12482A; --hero-b:#2C6E47;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1714; --top:#14231C; --ink:#E1EEE7; --muted:#9BB4A8; --line:#2A4337; --card:#16221D;
+  --green:#6CCB8A; --green-2:#4FB86C; --green-soft:#17301F; --section:#121E19;
+  --sky:#86B9E6; --sky-soft:#16263A; --sky-line:#284562;
+  --nav:#0C1F31; --nav-ink:#DCEAF5; --nav-accent:#6CCB8A;
+  --lilac:#B99BE6; --lilac-soft:#241B33; --lilac-line:#3B2E52;
+  --amber:#F0B45A; --amber-soft:#33260F; --coral:#EE8A80; --coral-soft:#381A17;
+  --shadow:rgba(0,0,0,.45); --on-accent:#0B1611;
+  --hero-a:#12482A; --hero-b:#2C6E47;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Assistant,"Segoe UI",Arial,sans-serif;font-size:16px;line-height:1.55;direction:rtl}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--sky)}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ic{display:inline-block;flex:none;vertical-align:middle;width:44px;height:44px}
+.ic svg{display:block;width:100%;height:100%}
+
+/* ---------- פס עליון ותפריט ---------- */
+.hdr{position:sticky;top:0;z-index:50}
+.top{display:flex;align-items:center;gap:10px 16px;min-height:54px;padding:6px 20px;background:var(--top);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;text-decoration:none;color:inherit}
+.brand .ic{width:34px;height:34px}
+.brand-name{font:500 16px Heebo,sans-serif;color:var(--green);white-space:nowrap}
+.brand-sep{width:1px;height:24px;background:currentColor;opacity:.25}
+.brand-who{font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-gap{flex:1 1 auto}
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:700;border:1px solid var(--line);background:var(--card);color:var(--ink);white-space:nowrap}
+.chip.l{border-color:var(--lilac-line);background:var(--lilac-soft);color:var(--lilac)}
+.round{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:30px;padding:0 13px;border:1px solid currentColor;border-radius:999px;background:transparent;color:var(--ink);font-size:13px;font-weight:600;cursor:pointer;opacity:.85;white-space:nowrap}
+.round:hover{opacity:1}
+.nav{display:flex;flex-wrap:wrap;justify-content:center;gap:0 2px;padding:0 12px;background:var(--nav)}
+.nav button{position:relative;display:flex;align-items:center;gap:7px;height:42px;padding:0 14px;border:0;background:transparent;color:var(--nav-ink);font:400 15px Heebo,sans-serif;letter-spacing:.2px;cursor:pointer;opacity:.9;white-space:nowrap}
+.nav button .ic{width:18px;height:18px}
+.nav button:hover,.nav button:focus-visible{opacity:1;outline:none;box-shadow:inset 0 -2px 0 var(--nav-accent)}
+.nav button.on{opacity:1;box-shadow:inset 0 -3px 0 var(--nav-accent);font-weight:500}
+.badge{min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#F2A33A;color:#2A1A00;font:700 11.5px/19px Assistant,sans-serif;text-align:center}
+
+/* ---------- באנר ---------- */
+.hero{position:relative;margin-bottom:28px}
+.hero-band{position:relative;height:230px;overflow:hidden;background:linear-gradient(160deg,var(--hero-a),var(--hero-b))}
+.hero-band svg{position:absolute;inset:0;width:100%;height:100%}
+.hero-row{position:relative;z-index:2;width:min(1180px,calc(100% - 32px));margin:-150px auto 0;display:flex;gap:18px;align-items:stretch}
+.hero-card,.board{background:var(--card);border-radius:18px;box-shadow:0 14px 36px var(--shadow)}
+.hero-card{flex:1.45 1 0;min-width:0;padding:24px 30px 22px;display:flex;flex-direction:column;gap:10px}
+.eyebrow{font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}
+.eyebrow b{color:var(--ink);font-weight:600}
+.hero-title{margin:0;font:300 clamp(30px,5vw,50px)/1.1 Heebo,sans-serif;letter-spacing:-.3px;color:var(--green)}
+.hero-title.empty{color:var(--muted);font-size:clamp(24px,4vw,34px)}
+.hero-about{margin:0;font-size:17px;color:var(--muted);white-space:pre-wrap}
+.hero-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:6px}
+.board{flex:1 1 0;min-width:0;padding:16px 22px;border-top:3px solid var(--sky);display:flex;flex-direction:column;gap:8px}
+.board h2{margin:0;font:500 15px Heebo,sans-serif;color:var(--sky);display:flex;align-items:center;gap:8px}
+.board h2 .ic{width:22px;height:22px}
+.board-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.board-list li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14.5px;cursor:pointer}
+.board-list li:last-child{border-bottom:0}
+.board-list li:hover .bl-t{color:var(--green)}
+.board-list .ic{width:30px;height:30px}
+.bl-t{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bl-s{font-size:12.5px;color:var(--muted)}
+.board-empty{color:var(--muted);font-size:14.5px;padding:10px 0}
+
+/* ---------- תוכן ---------- */
+main{min-height:40vh}
+.wrap{width:min(1180px,calc(100% - 32px));margin:0 auto}
+.narrow{width:min(860px,calc(100% - 32px));margin:0 auto}
+.sec{background:var(--section);padding:46px 0 60px;margin-top:34px}
+.sec-h{margin:0 0 28px;text-align:center;font:300 clamp(30px,5vw,42px)/1.2 Heebo,sans-serif;color:var(--green)}
+.sec-sub{margin:-18px 0 26px;text-align:center;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 26px;box-shadow:0 2px 10px rgba(10,40,25,.05)}
+.card+.card{margin-top:16px}
+.card-h{display:flex;align-items:center;gap:14px;margin:0 0 12px}
+.card-h h2,.card-h h3{margin:0;font:400 24px/1.25 Heebo,sans-serif;color:var(--ink)}
+.card-h .ic{width:52px;height:52px}
+.card-h .grow{flex:1;min-width:0}
+.card-h .sub{margin:2px 0 0;font-size:14px;color:var(--muted)}
+.back{display:inline-flex;align-items:center;gap:6px;margin:6px 0 14px;border:0;background:none;color:var(--sky);font-weight:700;cursor:pointer;padding:4px 0}
+.page-h{display:flex;align-items:flex-start;gap:18px;margin:0 0 18px}
+.page-h .ic{width:64px;height:64px}
+.page-h h1{margin:0;font:300 clamp(28px,4.4vw,40px)/1.15 Heebo,sans-serif;color:var(--green)}
+.page-h .sub{margin:6px 0 0;color:var(--muted);font-size:15.5px}
+.page-n{font:200 54px/1 Heebo,sans-serif;color:var(--green);min-width:64px;text-align:center}
+
+/* כפתורים */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:0 20px;border:1px solid var(--green);border-radius:999px;background:var(--green);color:var(--on-accent);font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{filter:brightness(1.06)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn .ic{width:18px;height:18px}
+.btn.sky{background:var(--sky);border-color:var(--sky)}
+.btn.lilac{background:var(--lilac);border-color:var(--lilac)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--green);color:var(--green);filter:none}
+.btn.sm{min-height:32px;padding:0 13px;font-size:13.5px}
+.btn.danger{background:transparent;color:var(--coral);border-color:var(--coral-soft)}
+.btn.danger:hover{background:var(--coral-soft);filter:none}
+.mini{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+.mini:hover{border-color:var(--green);color:var(--green)}
+.mini.view{border-color:var(--sky-line);color:var(--sky);background:var(--sky-soft)}
+.mini.down{border-color:var(--line);color:var(--green);background:var(--green-soft)}
+.mini.edit{color:var(--lilac);border-color:var(--lilac-line)}
+.mini.del{color:var(--coral);border-color:var(--coral-soft)}
+.mini.icon{width:32px;padding:0}
+.mini svg{width:15px;height:15px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* כרטיסי שיעורים */
+.lessons{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:20px}
+.lesson{text-decoration:none;display:flex;flex-direction:column;padding:0;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;color:var(--ink);text-align:right;cursor:pointer;transition:transform .25s ease,box-shadow .25s ease}
+.lesson:hover,.lesson:focus-visible{transform:translateY(-4px);box-shadow:0 14px 30px var(--shadow);outline:none}
+.lesson-art{display:block;height:118px;background:var(--section);overflow:hidden}
+.lesson-art svg{display:block;width:100%;height:100%}
+.float{transform-origin:100px 60px;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.lesson:hover .float{transform:scale(1.06) rotate(-2deg) translateY(-3px)}
+.lesson-body{display:flex;flex-direction:column;gap:9px;padding:16px 18px 18px;flex:1}
+.lesson-n{font:200 36px/1 Heebo,sans-serif;color:var(--green)}
+.lesson-rule{width:28px;height:1px;background:var(--ink);opacity:.35}
+.lesson-title{font:400 17px/1.35 Heebo,sans-serif}
+.lesson-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:4px}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--card)}
+.tag.task{border-color:var(--lilac-line);color:var(--lilac);background:var(--lilac-soft)}
+.tag.date{border-color:var(--sky-line);color:var(--sky);background:var(--sky-soft)}
+.tag.new{border-color:#F2C37A;color:var(--amber);background:var(--amber-soft)}
+.lesson.add{align-items:center;justify-content:center;gap:10px;min-height:250px;border:1.5px dashed var(--line);background:transparent;color:var(--green);font:500 16px Heebo,sans-serif}
+.lesson.add .ic{width:58px;height:58px}
+
+/* סילבוס ברשימה בדף הבית */
+.syl-preview{position:relative;max-height:150px;overflow:hidden}
+.syl-preview::after{content:"";position:absolute;inset:auto 0 0 0;height:60px;background:linear-gradient(to bottom,transparent,var(--card))}
+.rich{font-size:16.5px;line-height:1.75}
+.rich p{margin:0 0 12px}
+.rich h3{font:500 19px/1.35 Heebo,sans-serif;color:var(--green);margin:20px 0 8px}
+.rich h3:first-child{margin-top:0}
+.rich ul,.rich ol{margin:0 0 12px;padding-inline-start:24px}
+.rich li{margin:3px 0}
+.rich li::marker{color:var(--green-2)}
+.rich a{word-break:break-all}
+.muted{color:var(--muted)}
+.hint{font-size:13.5px;color:var(--muted);margin:6px 0 0}
+
+/* פריטים: קבצים וקישורים */
+.items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.item{display:flex;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);transition:border-color .15s}
+.item:hover{border-color:var(--green-2)}
+.ft{width:46px;height:46px;flex:none;border-radius:12px;color:var(--c);background:color-mix(in srgb,var(--c) 13%,var(--card));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font:700 9.5px/1 Assistant,sans-serif;letter-spacing:.4px}
+.ft svg{width:22px;height:22px}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .ft{filter:brightness(1.35)} }
+:root[data-theme="dark"] .ft{filter:brightness(1.35)}
+.item-main{flex:1;min-width:0}
+.item-t{font-weight:700;font-size:15.5px;overflow-wrap:anywhere}
+.item-s{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:2px 10px}
+.item-note{font-size:14px;color:var(--muted);margin-top:3px;white-space:pre-wrap}
+.item-acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.empty{border:1.5px dashed var(--line);border-radius:14px;padding:22px;text-align:center;color:var(--muted)}
+.adder{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.prog{height:6px;border-radius:99px;background:var(--section);overflow:hidden;margin-top:6px}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green-2),var(--sky));transition:width .2s}
+
+/* טפסים */
+label.f{display:block;font-size:14px;font-weight:700;color:var(--ink);margin:14px 0 5px}
+label.f small{font-weight:400;color:var(--muted)}
+input.t,select.t,textarea.t{width:100%;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:10px 13px;font-size:15.5px;color:var(--ink)}
+input.t:focus,select.t:focus,textarea.t:focus{outline:2px solid var(--green-2);outline-offset:0;border-color:transparent}
+textarea.t{min-height:120px;resize:vertical;line-height:1.6}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.check{display:flex;align-items:center;gap:8px;margin:12px 0 0;font-size:14.5px;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--green)}
+.drop{margin-top:6px;border:1.5px dashed var(--line);border-radius:14px;padding:18px;text-align:center;background:var(--bg);cursor:pointer;transition:border-color .15s,background .15s}
+.drop.over,.drop:hover{border-color:var(--green-2);background:var(--green-soft)}
+.drop .ic{width:46px;height:46px;margin:0 auto 6px;display:block}
+.drop b{color:var(--green)}
+.files-chosen{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.files-chosen li{display:flex;align-items:center;gap:10px;font-size:14px;background:var(--section);border-radius:10px;padding:6px 10px}
+.files-chosen li .nm{flex:1;min-width:0;overflow-wrap:anywhere}
+.datechip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--sky-soft);color:var(--sky);font-weight:700;font-size:14px}
+.datechip .ic{width:18px;height:18px}
+.msg{border-radius:12px;padding:12px 15px;margin-top:14px;font-size:15px}
+.msg.ok{background:var(--green-soft);color:var(--green);border:1px solid var(--line)}
+.msg.err{background:var(--coral-soft);color:var(--coral);border:1px solid var(--coral-soft)}
+.msg.info{background:var(--sky-soft);color:var(--sky);border:1px solid var(--sky-line)}
+.formcols{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;align-items:start}
+.aside{background:var(--section);border-radius:18px;padding:20px 22px;font-size:14.5px;color:var(--muted)}
+.aside h3{margin:0 0 8px;font:500 17px Heebo,sans-serif;color:var(--ink);display:flex;align-items:center;gap:8px}
+.aside h3 .ic{width:26px;height:26px}
+.aside ul{margin:0;padding-inline-start:18px}
+.aside li{margin:4px 0}
+
+/* תיבת ההגשות וההודעות */
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.filters button{height:32px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-size:13.5px;font-weight:600}
+.filters button.on{background:var(--green);border-color:var(--green);color:var(--on-accent)}
+.entry{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:16px 18px;display:flex;gap:14px}
+.entry+.entry{margin-top:10px}
+.entry.unseen{border-color:var(--green-2);box-shadow:inset -4px 0 0 var(--green-2)}
+.entry .ava{width:42px;height:42px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font:500 17px Heebo,sans-serif;color:#fff}
+.entry-main{flex:1;min-width:0}
+.entry-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.entry-h b{font-size:16px}
+.entry-h span{font-size:13px;color:var(--muted)}
+.entry-text{margin:8px 0 0;white-space:pre-wrap;font-size:15px}
+.entry-files{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.entry-file{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--section);border-radius:10px;padding:6px 10px;font-size:14px}
+.entry-file .ft{width:32px;height:32px;border-radius:9px;font-size:0}
+.entry-file .ft svg{width:17px;height:17px}
+.entry-file .nm{flex:1;min-width:120px;overflow-wrap:anywhere}
+.entry-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+
+/* קוד לסטודנטים */
+.codebox{display:flex;flex-wrap:wrap;align-items:center;gap:14px 22px}
+.bigcode{font:500 34px/1 Heebo,monospace;letter-spacing:3px;color:var(--green);background:var(--green-soft);border:1px dashed var(--green-2);border-radius:14px;padding:14px 22px;direction:ltr}
+.qr{background:#fff;padding:10px;border-radius:12px;width:max-content;margin-top:12px}
+.ready{white-space:pre-wrap;background:var(--section);border-radius:12px;padding:12px 14px;font-size:14.5px;margin-top:10px}
+
+/* מסך כניסה */
+.gate{min-height:100vh;display:flex;flex-direction:column}
+.gate-band{position:relative;flex:0 0 300px;overflow:hidden;background:linear-gradient(160deg,var(--hero-a),var(--hero-b))}
+.gate-band svg{position:absolute;inset:0;width:100%;height:100%}
+.gate-card{position:relative;z-index:2;width:min(480px,calc(100% - 32px));margin:-190px auto 40px;background:var(--card);border-radius:22px;box-shadow:0 18px 44px var(--shadow);padding:30px 32px 26px;text-align:center}
+.gate-card .ic.big{width:84px;height:84px;margin:-74px auto 8px;display:block;background:var(--card);border-radius:50%;padding:12px;box-shadow:0 8px 20px var(--shadow)}
+.gate-card h1{margin:4px 0 4px;font:300 32px/1.2 Heebo,sans-serif;color:var(--green)}
+.gate-card .who{margin:0 0 18px;color:var(--muted)}
+.codein{width:100%;text-align:center;font:500 24px Heebo,sans-serif;letter-spacing:3px;direction:ltr;padding:12px;border:1.5px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink)}
+.codein:focus{outline:2px solid var(--green-2);border-color:transparent}
+.gate-card .btn{width:100%;margin-top:14px;min-height:46px;font-size:16px}
+.gate-card .check{justify-content:center}
+.gate-foot{margin-top:auto;text-align:center;font-size:13px;color:var(--muted);padding:18px}
+
+/* חלון */
+dialog.dlg{border:0;border-radius:20px;padding:0;width:min(560px,calc(100% - 24px));background:var(--card);color:var(--ink);box-shadow:0 24px 60px rgba(0,0,0,.3)}
+dialog.dlg::backdrop{background:rgba(8,30,20,.45)}
+.dlg-h{display:flex;align-items:center;gap:12px;padding:18px 22px;background:var(--section);border-bottom:1px solid var(--line)}
+.dlg-h h2{margin:0;font:400 22px Heebo,sans-serif;color:var(--green);flex:1}
+.dlg-h .ic{width:40px;height:40px}
+.dlg-b{padding:4px 22px 6px;max-height:min(70vh,640px);overflow:auto}
+.dlg-f{display:flex;gap:8px;justify-content:flex-start;padding:14px 22px 18px;flex-wrap:wrap}
+.x{border:0;background:transparent;font-size:24px;line-height:1;color:var(--muted);cursor:pointer;padding:4px 8px;border-radius:8px}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);background:var(--nav);color:var(--nav-ink);padding:10px 20px;border-radius:999px;font-weight:600;font-size:14.5px;opacity:0;transition:all .25s;z-index:1000;pointer-events:none;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.loading{display:flex;flex-direction:column;align-items:center;gap:12px;padding:80px 16px;color:var(--muted)}
+.spin{width:38px;height:38px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--green);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fade{animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+footer{padding:28px 16px 34px;text-align:center;color:var(--muted);font-size:13px;background:var(--section);margin-top:44px}
+footer img{height:22px;vertical-align:middle;margin-inline-start:6px;opacity:.8}
+
+/* ניהול: רשימת קורסים */
+.course-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
+.course-row .grow{flex:1;min-width:220px}
+.kv{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;color:var(--muted);margin-top:6px}
+.kv b{color:var(--ink);font-family:Heebo,monospace;letter-spacing:1px;direction:ltr;unicode-bidi:isolate}
+
+@media (max-width:900px){
+  .hero-row{flex-direction:column}
+  .formcols{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .top{padding:6px 14px}
+  .brand-who,.brand-sep,.top .chip{display:none}
+  .top{flex-wrap:nowrap}
+  .nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding:0 6px;scrollbar-width:none}
+  .nav button{padding:0 11px;font-size:14px}
+  .hero-band{height:170px}
+  .hero-row{margin-top:-120px;width:calc(100% - 24px)}
+  .hero-card{padding:20px 20px 18px}
+  .wrap,.narrow{width:calc(100% - 32px)}
+  .card{padding:18px 16px}
+  .two{grid-template-columns:1fr}
+  .item{flex-wrap:wrap}
+  .item-acts{width:100%;justify-content:flex-start;padding-inline-start:60px}
+  .lessons{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .lesson-art{height:90px}
+  .page-n{font-size:40px;min-width:46px}
+  .bigcode{font-size:26px;padding:10px 16px}
+}
+@media print{
+  .hdr,.hero-band,.hero-actions,.item-acts,.adder,footer,.back,.btn,.mini{display:none!important}
+  @page{size:A4;margin:18mm 20mm}
+  body{background:#fff}
+  .card,.item,.entry{break-inside:avoid}
+  h1,h2,h3{break-after:avoid}
+}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading"><div class="spin"></div><div>טוענת את סביבת הקורס...</div></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+const API = "/api";
+const Q = new URLSearchParams(location.search);
+const CID = (Q.get("c") || "").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 20);
+const $app = document.getElementById("app");
+
+/* ───────── כלים קטנים ───────── */
+function el(tag, attrs, ...kids){
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") n.className = v;
+    else if (k === "html") n.innerHTML = v; // רק למחרוזות SVG קבועות שלנו
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null && c !== false) n.append(c.nodeType ? c : String(c));
+  return n;
+}
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k) || "null"); } catch(e){ return null; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} },
+  del(k){ try { localStorage.removeItem(k); } catch(e){} },
+};
+function toast(t){ const n = document.getElementById("toast"); n.textContent = t; n.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => n.classList.remove("on"), 2600); }
+const fmtDate = (d) => { if (!d) return ""; const x = new Date(d.length === 10 ? d + "T12:00:00" : d); return isNaN(x) ? "" : x.toLocaleDateString("he-IL", { day:"numeric", month:"numeric", year:"numeric" }); };
+const fmtWhen = (d) => { const x = new Date(d); return isNaN(x) ? "" : x.toLocaleDateString("he-IL", { day:"numeric", month:"numeric", year:"numeric" }) + " · " + x.toLocaleTimeString("he-IL", { hour:"2-digit", minute:"2-digit" }); };
+const fmtSize = (b) => !b ? "" : b < 1024 * 1024 ? Math.max(1, Math.round(b / 1024)) + " KB" : (b / 1024 / 1024).toFixed(b < 10 * 1024 * 1024 ? 1 : 0) + " MB";
+const pad2 = (n) => String(n).padStart(2, "0");
+// מקלדת בעברית: הקודים באותיות לטיניות — ממירים לפי מיקום המקש (כמו ב-entry.html)
+const HE_KEYS = { "/":"Q", "'":"W", "ק":"E", "ר":"R", "א":"T", "ט":"Y", "ו":"U", "ן":"I", "ם":"O", "פ":"P", "ש":"A", "ד":"S", "ג":"D", "כ":"F", "ע":"G", "י":"H", "ח":"J", "ל":"K", "ך":"L", "ז":"Z", "ס":"X", "ב":"C", "ה":"V", "נ":"B", "מ":"N", "צ":"M" };
+const fixKeys = (v) => String(v || "").replace(/[\/'א-ת]/g, (ch) => HE_KEYS[ch] || ch).toUpperCase();
+async function copy(text, done){ try { await navigator.clipboard.writeText(text); toast(done || "הועתק"); } catch(e){ prompt("להעתקה:", text); } }
+
+/* ───────── איקונים מעוצבים (SVG, צבעוניים, בשפה של הספר הירוק) ───────── */
+let gid = 0;
+const G = (a, b) => { const id = "g" + (++gid); return [id, `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`]; };
+const ICON = {
+  // ספר פתוח — סילבוס
+  book(){ const [a, da] = G("#2FA34F", "#3C8FC4"), [b, db] = G("#7E57C2", "#3C8FC4");
+    return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><circle cx="24" cy="26" r="20" fill="#2FA34F" opacity=".1"/><path d="M6 13.5c6-2.6 11.6-2.4 17 1.2v24.6c-5.4-3.4-11-3.6-17-1z" fill="url(#${a})"/><path d="M42 13.5c-6-2.6-11.6-2.4-17 1.2v24.6c5.4-3.4 11-3.6 17-1z" fill="url(#${b})" opacity=".85"/><path d="M10 20c3.4-1 6.6-.8 9.6.8M10 25c3.4-1 6.6-.8 9.6.8M28.4 20.8c3-1.6 6.2-1.8 9.6-.8" stroke="#fff" stroke-width="1.4" stroke-linecap="round" fill="none" opacity=".75"/><circle cx="39" cy="8" r="3" fill="#F2A33A"/></svg>`; },
+  // שכבות — שיעורים
+  layers(){ const [a, da] = G("#3C8FC4", "#7E57C2"), [b, db] = G("#2FA34F", "#3C8FC4");
+    return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><path d="M24 26 6 18l18-8 18 8z" fill="url(#${a})" opacity=".35" transform="translate(0 12)"/><path d="M24 26 6 18l18-8 18 8z" fill="url(#${a})" opacity=".6" transform="translate(0 6)"/><path d="M24 26 6 18l18-8 18 8z" fill="url(#${b})"/><circle cx="37" cy="9" r="3" fill="#F2A33A"/></svg>`; },
+  // העלאה — הגשת תוצר
+  upload(){ const [a, da] = G("#2FA34F", "#1E7B3A"), [b, db] = G("#3C8FC4", "#7E57C2");
+    return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><rect x="7" y="25" width="34" height="16" rx="5" fill="url(#${b})" opacity=".3"/><path d="M7 30v6a5 5 0 0 0 5 5h24a5 5 0 0 0 5-5v-6" stroke="url(#${b})" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M24 31V9m0 0-8 8m8-8 8 8" stroke="url(#${a})" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="38" cy="10" r="3" fill="#F2A33A"/></svg>`; },
+  // מעטפה — הודעה למרצה
+  letter(){ const [a, da] = G("#3C8FC4", "#1F5F99"), [b, db] = G("#7E57C2", "#3C8FC4");
+    return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><rect x="6" y="12" width="36" height="26" rx="6" fill="url(#${a})"/><path d="m8 15 16 12 16-12" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/><path d="M33 6c4 1 7 4 8 8" stroke="url(#${b})" stroke-width="2.6" stroke-linecap="round" fill="none"/><circle cx="42" cy="17" r="2.6" fill="#F2A33A"/></svg>`; },
+  // תיבה — ההגשות
+  inbox(){ const [a, da] = G("#2FA34F", "#3C8FC4"), [b, db] = G("#7E57C2", "#B07FE0");
+    return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><rect x="13" y="6" width="22" height="16" rx="3" fill="url(#${b})" opacity=".55" transform="rotate(-6 24 14)"/><path d="M6 26h11l3 5h8l3-5h11v9a6 6 0 0 1-6 6H12a6 6 0 0 1-6-6z" fill="url(#${a})"/><path d="M6 26l5-10h26l5 10" stroke="url(#${a})" stroke-width="2.4" fill="none" stroke-linejoin="round"/><circle cx="40" cy="9" r="3" fill="#F2A33A"/></svg>`; },
+  // בועות שיחה — הודעות
+  chat(){ const [a, da] = G("#3C8FC4", "#7E57C2"), [b, db] = G("#2FA34F", "#8FD6A2");
+    return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><path d="M8 10h22a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H17l-7 6v-6H8a5 5 0 0 1-5-5V15a5 5 0 0 1 5-5z" fill="url(#${a})"/><path d="M38 18h2a5 5 0 0 1 5 5v9a5 5 0 0 1-5 5h-1v5l-6-5h-9a5 5 0 0 1-5-5" fill="url(#${b})" opacity=".8"/><circle cx="12" cy="20" r="1.8" fill="#fff"/><circle cx="19" cy="20" r="1.8" fill="#fff"/><circle cx="26" cy="20" r="1.8" fill="#fff"/></svg>`; },
+  // מפתח — קוד והגדרות
+  key(){ const [a, da] = G("#F2A33A", "#E07B39"), [b, db] = G("#2FA34F", "#3C8FC4");
+    return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><circle cx="16" cy="24" r="10" fill="url(#${a})"/><circle cx="16" cy="24" r="3.6" fill="#fff" opacity=".9"/><path d="M25 24h17m-6 0v7m-6-7v5" stroke="url(#${b})" stroke-width="3.6" stroke-linecap="round" fill="none"/><circle cx="38" cy="11" r="2.6" fill="#7E57C2" opacity=".8"/></svg>`; },
+  // כובע סיום — מסך כניסה ולוגו
+  cap(){ const [a, da] = G("#2FA34F", "#1F5F99"), [b, db] = G("#7E57C2", "#3C8FC4");
+    return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><path d="M24 9 3 19l21 10 21-10z" fill="url(#${a})"/><path d="M12 24v8c0 3.5 5.4 6.5 12 6.5S36 35.5 36 32v-8l-12 5.6z" fill="url(#${b})" opacity=".85"/><path d="M41 21v10" stroke="#F2A33A" stroke-width="2.4" stroke-linecap="round"/><circle cx="41" cy="33" r="2.8" fill="#F2A33A"/></svg>`; },
+  calendar(){ const [a, da] = G("#3C8FC4", "#2FA34F");
+    return `<svg viewBox="0 0 24 24"><defs>${da}</defs><rect x="3" y="5" width="18" height="16" rx="4" fill="url(#${a})"/><path d="M3 10h18" stroke="#fff" stroke-width="1.6"/><path d="M8 3v4M16 3v4" stroke="#1F5F99" stroke-width="2" stroke-linecap="round"/></svg>`; },
+  plus(){ const [a, da] = G("#2FA34F", "#3C8FC4");
+    return `<svg viewBox="0 0 48 48"><defs>${da}</defs><circle cx="24" cy="24" r="20" fill="url(#${a})" opacity=".14"/><circle cx="24" cy="24" r="14" fill="url(#${a})"/><path d="M24 17v14M17 24h14" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>`; },
+  sparkle(){ const [a, da] = G("#F2A33A", "#7E57C2");
+    return `<svg viewBox="0 0 24 24"><defs>${da}</defs><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z" fill="url(#${a})"/><circle cx="19" cy="19" r="2" fill="#2FA34F"/></svg>`; },
+};
+const icon = (name, cls) => el("span", { class: "ic" + (cls ? " " + cls : ""), "aria-hidden": "true", html: ICON[name]() });
+// איקונים קטנים בקו — לכפתורי פעולה
+const LINE = {
+  eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-5-5m5 5 5-5M5 20h14"/></svg>',
+  open: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4 10 14M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
+  edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>',
+  up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>',
+  dn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>',
+  reply: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 8 4 13l6 5"/><path d="M4 13h10a6 6 0 0 1 6 6"/></svg>',
+  link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>',
+  file: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>',
+  play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>',
+  img: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>',
+  table: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M10 4v16"/></svg>',
+  slides: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8M8 12l3-3 2 2 3-3"/></svg>',
+  zip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M11 6h1M11 9h1M11 12h1M10.5 15h2v3h-2z"/></svg>',
+  out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 17l-5-5 5-5M5 12h11"/></svg>',
+};
+const line = (n) => el("span", { class: "ic", style: "width:16px;height:16px", "aria-hidden": "true", html: LINE[n] });
+
+// סוג הקובץ — צבע, תווית ואיקון
+const FT = {
+  pdf:   { label: "PDF",  icon: "file",   c: "#C8463B", bg: "#FBE9E7" },
+  doc:   { label: "WORD", icon: "file",   c: "#2B6CB0", bg: "#E6F0FA" },
+  ppt:   { label: "מצגת", icon: "slides", c: "#D86A1E", bg: "#FDEEDF" },
+  xls:   { label: "גיליון", icon: "table", c: "#1E7B3A", bg: "#E6F5EA" },
+  img:   { label: "תמונה", icon: "img",   c: "#0E8A86", bg: "#E0F4F2" },
+  vid:   { label: "וידאו", icon: "play",  c: "#6B3FA0", bg: "#F1EAFA" },
+  aud:   { label: "שמע",  icon: "play",   c: "#8A4FB5", bg: "#F3EAFA" },
+  zip:   { label: "ZIP",  icon: "zip",    c: "#5B6B66", bg: "#ECEFEE" },
+  yt:    { label: "וידאו", icon: "play",  c: "#D93025", bg: "#FCE8E6" },
+  gdoc:  { label: "Drive", icon: "link",  c: "#1F5F99", bg: "#E3EEF8" },
+  link:  { label: "קישור", icon: "link",  c: "#1F5F99", bg: "#E3EEF8" },
+  other: { label: "קובץ", icon: "file",   c: "#4A6359", bg: "#EEF7F3" },
+};
+function ftOf(it){
+  if (it.kind === "link") {
+    const u = it.url || "";
+    if (/youtu\.?be|vimeo\.com/i.test(u)) return "yt";
+    if (/docs\.google|drive\.google|onedrive|sharepoint|dropbox/i.test(u)) return "gdoc";
+    return "link";
+  }
+  const n = (it.name || "").toLowerCase(), t = (it.type || "").toLowerCase();
+  const ext = (n.match(/\.([a-z0-9]+)$/) || [])[1] || "";
+  if (ext === "pdf" || t.includes("pdf")) return "pdf";
+  if (/^(docx?|odt|rtf|txt|pages)$/.test(ext)) return "doc";
+  if (/^(pptx?|odp|key)$/.test(ext)) return "ppt";
+  if (/^(xlsx?|ods|csv|numbers)$/.test(ext)) return "xls";
+  if (/^(png|jpe?g|gif|webp|svg|heic|bmp)$/.test(ext) || t.startsWith("image/")) return "img";
+  if (/^(mp4|mov|webm|m4v|avi|mkv)$/.test(ext) || t.startsWith("video/")) return "vid";
+  if (/^(mp3|m4a|wav|ogg|aac)$/.test(ext) || t.startsWith("audio/")) return "aud";
+  if (/^(zip|rar|7z)$/.test(ext)) return "zip";
+  return "other";
+}
+function ftBadge(it){
+  const f = FT[ftOf(it)];
+  return el("span", { class: "ft", style: `--c:${f.c}`, "aria-hidden": "true", html: LINE[f.icon] + `<span>${f.label}</span>` });
+}
+const isOffice = (it) => /\.(docx?|pptx?|xlsx?)$/i.test(it.name || "");
+const isInline = (it) => /\.(pdf|png|jpe?g|gif|webp|svg|mp4|webm|mov|mp3|m4a|wav|ogg|txt)$/i.test(it.name || "");
+
+// איור לכל שיעור — 8 קומפוזיציות מתחלפות בצבעי הספר הירוק
+const ARTS = [
+  // ספרים בערימה
+  (a, b) => `<rect x="54" y="78" width="96" height="16" rx="4" fill="url(#${a})"/><rect x="62" y="60" width="84" height="16" rx="4" fill="url(#${b})" opacity=".85"/><rect x="58" y="42" width="78" height="16" rx="4" fill="url(#${a})" opacity=".6"/><path d="M150 30l4 9 9 4-9 4-4 9-4-9-9-4 9-4z" fill="#F2A33A"/>`,
+  // נורה — רעיון
+  (a, b) => `<circle cx="100" cy="54" r="32" fill="url(#${a})" opacity=".9"/><rect x="88" y="84" width="24" height="14" rx="4" fill="url(#${b})"/><path d="M92 104h16" stroke="url(#${b})" stroke-width="4" stroke-linecap="round"/><path d="M50 54h-14M164 54h-14M64 20l-10-10M136 20l10-10" stroke="#F2A33A" stroke-width="3" stroke-linecap="round"/>`,
+  // בועות שיח
+  (a, b) => `<rect x="34" y="26" width="84" height="50" rx="16" fill="url(#${a})" opacity=".9"/><path d="M54 76l-8 18 22-18z" fill="url(#${a})" opacity=".9"/><rect x="92" y="52" width="76" height="44" rx="16" fill="url(#${b})" opacity=".8"/><circle cx="62" cy="51" r="4" fill="#fff"/><circle cx="76" cy="51" r="4" fill="#fff"/><circle cx="90" cy="51" r="4" fill="#fff"/>`,
+  // מדרגות צמיחה
+  (a, b) => `<rect x="40" y="80" width="30" height="24" rx="4" fill="url(#${a})" opacity=".55"/><rect x="76" y="60" width="30" height="44" rx="4" fill="url(#${a})" opacity=".75"/><rect x="112" y="38" width="30" height="66" rx="4" fill="url(#${b})"/><path d="M44 66c30-6 60-22 92-44" stroke="#F2A33A" stroke-width="3" stroke-linecap="round" fill="none" stroke-dasharray="2 7"/><circle cx="148" cy="20" r="6" fill="#F2A33A"/>`,
+  // מצפן
+  (a, b) => `<circle cx="100" cy="60" r="42" fill="url(#${a})" opacity=".25"/><circle cx="100" cy="60" r="30" fill="none" stroke="url(#${b})" stroke-width="4"/><path d="M100 36l9 24-9 24-9-24z" fill="url(#${b})"/><path d="M100 36l9 24h-18z" fill="#F2A33A"/><circle cx="100" cy="60" r="3.5" fill="#fff"/>`,
+  // דף ועיפרון
+  (a, b) => `<rect x="62" y="20" width="66" height="84" rx="8" fill="url(#${a})" opacity=".85"/><path d="M76 42h38M76 56h38M76 70h24" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/><path d="M118 92l38-38 10 10-38 38-14 4z" fill="url(#${b})"/><path d="M156 54l10 10" stroke="#F2A33A" stroke-width="5" stroke-linecap="round"/>`,
+  // רשת קשרים
+  (a, b) => `<path d="M60 70L100 34l44 30-30 40zM60 70l54 34M100 34l14 70" stroke="url(#${b})" stroke-width="2.5" fill="none" opacity=".7"/><circle cx="60" cy="70" r="13" fill="url(#${a})"/><circle cx="100" cy="34" r="10" fill="url(#${b})"/><circle cx="144" cy="64" r="12" fill="url(#${a})" opacity=".8"/><circle cx="114" cy="104" r="9" fill="#F2A33A"/>`,
+  // נבט
+  (a, b) => `<path d="M100 104V58" stroke="url(#${b})" stroke-width="5" stroke-linecap="round"/><path d="M100 70c-6-22-26-32-46-30 2 20 20 34 46 30z" fill="url(#${a})"/><path d="M100 60c4-24 24-36 48-34-2 22-22 38-48 34z" fill="url(#${b})" opacity=".85"/><ellipse cx="100" cy="106" rx="34" ry="6" fill="url(#${a})" opacity=".35"/><circle cx="158" cy="22" r="5" fill="#F2A33A"/>`,
+];
+const PAL = [["#2FA34F", "#3C8FC4"], ["#3C8FC4", "#7E57C2"], ["#7E57C2", "#3C8FC4"], ["#2FA34F", "#8FD6A2"], ["#3C8FC4", "#2FA34F"], ["#7E57C2", "#2FA34F"]];
+function lessonArt(i){
+  const [c1, c2] = PAL[i % PAL.length], [c3, c4] = PAL[(i + 2) % PAL.length];
+  const [a, da] = G(c1, c2), [b, db] = G(c3, c4);
+  return `<svg viewBox="0 0 200 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs>${da}${db}</defs><g class="float">${ARTS[i % ARTS.length](a, b)}</g></svg>`;
+}
+// רקע הבאנר — צורות רכות על הירוק
+function bandArt(){
+  return `<svg viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+<circle cx="1080" cy="40" r="170" fill="#fff" opacity=".07"/><circle cx="160" cy="300" r="210" fill="#fff" opacity=".06"/>
+<path d="M0 210C220 150 420 250 640 200S1000 120 1200 170" fill="none" stroke="#fff" stroke-width="2" opacity=".22"/>
+<path d="M0 240C260 190 440 270 700 225S1020 160 1200 205" fill="none" stroke="#8FD6A2" stroke-width="1.4" opacity=".35"/>
+<circle cx="930" cy="92" r="7" fill="#F2A33A" opacity=".9"/><circle cx="300" cy="70" r="4" fill="#fff" opacity=".6"/><circle cx="560" cy="48" r="3" fill="#fff" opacity=".5"/>
+<path d="M760 58c30-20 70-22 100 0" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".35"/></svg>`;
+}
+
+/* ───────── טקסט עשיר לסילבוס: # כותרת, - תבליט, 1. רשימה, **מודגש**, קישורים ───────── */
+function inline(s){
+  const out = [];
+  const re = /(\*\*([^*]+)\*\*)|(https?:\/\/[^\s)]+)/g;
+  let last = 0, m;
+  while ((m = re.exec(s))) {
+    if (m.index > last) out.push(s.slice(last, m.index));
+    if (m[2]) out.push(el("strong", {}, m[2]));
+    else out.push(el("a", { href: m[3], target: "_blank", rel: "noopener" }, m[3]));
+    last = re.lastIndex;
+  }
+  if (last < s.length) out.push(s.slice(last));
+  return out;
+}
+function rich(text){
+  const box = el("div", { class: "rich" });
+  let list = null, para = [];
+  const flush = () => { if (para.length) { box.append(el("p", {}, inline(para.join(" ")))); para = []; } };
+  for (const raw of String(text || "").split("\n")) {
+    const ln = raw.trim();
+    let m;
+    if (!ln) { flush(); list = null; continue; }
+    if ((m = ln.match(/^#{1,4}\s+(.*)$/))) { flush(); list = null; box.append(el("h3", {}, inline(m[1].replace(/\*\*/g, "")))); continue; }
+    if ((m = ln.match(/^[-•*]\s+(.*)$/))) { flush(); if (!list || list.tagName !== "UL") { list = el("ul"); box.append(list); } list.append(el("li", {}, inline(m[1]))); continue; }
+    if ((m = ln.match(/^\d+[.)]\s+(.*)$/))) { flush(); if (!list || list.tagName !== "OL") { list = el("ol"); box.append(list); } list.append(el("li", {}, inline(m[1]))); continue; }
+    list = null; para.push(ln);
+  }
+  flush();
+  return box;
+}
+
+/* ───────── שרת ───────── */
+// שתי כניסות שמורות במכשיר: המרצה (adva.lect) וסטודנט/ית בכל קורס (adva.c.<קורס>).
+const LECT = "adva.lect";
+const KEY = CID ? "adva.c." + CID : LECT;
+const SIDKEY = "adva.sid";
+let S = store.get(LECT) || (CID ? store.get(KEY) : null) || null; // { token, role, code? }
+const sessKey = () => (S && S.role === "l") ? LECT : KEY;
+async function post(action, extra, opts){
+  const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 45000);
+  try {
+    const r = await fetch(API, { method: "POST", headers: { "content-type": "application/json" }, signal: ctrl.signal,
+      body: JSON.stringify({ action, cid: CID, token: (opts && opts.token) || (S && S.token) || "", ...extra }) });
+    const d = await r.json().catch(() => ({}));
+    return { status: r.status, ...d };
+  } catch(e){ return { status: 0, error: "down" }; }
+  finally { clearTimeout(timer); }
+}
+// בקשה עם כניסה: אם האסימון פג ושמור קוד במכשיר — נכנסים שוב בשקט ומנסים פעם נוספת
+async function call(action, extra){
+  let d = await post(action, extra);
+  if (d.status === 401 && S && S.code) {
+    const re = await post("login", { code: S.code, sid: store.get(SIDKEY) || "" }, { token: "-" });
+    if (re.token) { S = { ...S, token: re.token, role: re.role }; store.set(sessKey(), S); d = await post(action, extra); }
+  }
+  if (d.status === 401) { store.del(sessKey()); S = null; renderGate("הכניסה הסתיימה. הקלידו שוב את הקוד."); throw new Error("login"); }
+  return d;
+}
+const ERR = {
+  down: "אין כרגע חיבור לשרת. נסו שוב בעוד רגע.",
+  "too-big": "הקובץ גדול מדי.",
+  storage: "שמירת הקבצים לא זמינה כרגע. נסו שוב מאוחר יותר.",
+  "code-taken": "הקוד הזה כבר בשימוש. בחרו קוד אחר.",
+  "code-format": "קוד: 6 עד 16 אותיות לטיניות וספרות, ולא רק ספרות.",
+  "lect-format": "קוד מרצה: 8 עד 24 אותיות לטיניות וספרות.",
+  "too-many": "הגעתם למספר המרבי.",
+  "slow-down": "נשלחו הרבה הודעות בשעה האחרונה. נסו שוב מאוחר יותר.",
+  email: "כתובת המייל לא תקינה.",
+  empty: "חסר תוכן לשליחה.",
+  name: "צריך לכתוב שם.",
+};
+const errText = (d) => ERR[d.error] || "משהו השתבש. נסו שוב.";
+
+// העלאת קובץ: כתובת חתומה מהשרת, ואז העלאה ישירה עם התקדמות
+async function upload(file, purpose, onProgress){
+  const d = await call("upload", { purpose, name: file.name, size: file.size, type: file.type });
+  if (!d.uploadUrl) throw new Error(d.error === "too-big" ? "הקובץ \"" + file.name + "\" גדול מ-" + fmtSize(d.max) + "." : errText(d));
+  await new Promise((res, rej) => {
+    const x = new XMLHttpRequest();
+    x.open("PUT", d.uploadUrl);
+    x.setRequestHeader("content-type", file.type || "application/octet-stream");
+    x.upload.onprogress = (e) => { if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total); };
+    x.onload = () => x.status >= 200 && x.status < 300 ? res() : rej(new Error("ההעלאה נכשלה (" + x.status + ")."));
+    x.onerror = () => rej(new Error("ההעלאה נכשלה. בדקו את החיבור ונסו שוב."));
+    x.send(file);
+  });
+  return { path: d.path, name: file.name, size: file.size, type: file.type };
+}
+// צפייה / הורדה: כתובת חתומה קצרת מועד. החלון נפתח מיד (כדי שהדפדפן לא יחסום), והכתובת נטענת אחר כך.
+async function openFile(it, download){
+  const w = download ? null : window.open("", "_blank");
+  if (w) { try { w.document.write('<p dir="rtl" style="font-family:Assistant,Arial;padding:30px;color:#4A6359">פותחת את הקובץ...</p>'); } catch(e){} }
+  const d = await call("file", { path: it.path, download: download ? it.name : "" });
+  if (!d.url) { if (w) w.close(); toast(d.error === "missing" ? "הקובץ לא נמצא." : errText(d)); return; }
+  if (download) { const a = el("a", { href: d.url, download: it.name }); document.body.append(a); a.click(); a.remove(); return; }
+  const url = isOffice(it) && !isInline(it) ? "https://view.officeapps.live.com/op/view.aspx?src=" + encodeURIComponent(d.url) : d.url;
+  if (w) w.location.href = url; else location.href = url;
+}
+
+/* ───────── חלון כללי ───────── */
+function dialog(title, iconName, body, actions){
+  const d = el("dialog", { class: "dlg" });
+  const close = () => { d.close(); d.remove(); };
+  d.append(el("div", { class: "dlg-h" }, iconName ? icon(iconName) : null, el("h2", {}, title), el("button", { class: "x", "aria-label": "סגירה", onclick: close }, "×")),
+    el("div", { class: "dlg-b" }, body), el("div", { class: "dlg-f" }, actions(close)));
+  d.addEventListener("cancel", (e) => { e.preventDefault(); close(); });
+  document.body.append(d); d.showModal();
+  const f = d.querySelector("input,textarea,select"); if (f) f.focus();
+  return close;
+}
+function confirmBox(title, text, okLabel){
+  return new Promise((res) => {
+    dialog(title, null, el("p", {}, text), (close) => [
+      el("button", { class: "btn danger", onclick: () => { close(); res(true); } }, okLabel || "מחיקה"),
+      el("button", { class: "btn ghost", onclick: () => { close(); res(false); } }, "ביטול")]);
+  });
+}
+const field = (label, input, hint) => el("div", {}, el("label", { class: "f" }, label, hint ? el("small", {}, " · " + hint) : null), input);
+
+/* ───────── מסך כניסה ───────── */
+async function renderGate(note){
+  document.title = "כניסה · סביבת הקורסים";
+  $app.textContent = "";
+  const pub = await post("public", {}, { token: "-" });
+  const code = el("input", { class: "codein", placeholder: "XXXX-XXXX", autocomplete: "off", spellcheck: "false", "aria-label": "הקוד" });
+  const pre = (location.hash.match(/k=([A-Za-z0-9-]{4,20})/) || [])[1];
+  if (pre) code.value = pre.toUpperCase();
+  const keep = el("input", { type: "checkbox", checked: true });
+  const err = el("div", { class: "msg err" }); err.hidden = !note; if (note) err.textContent = note;
+  if (CID && pub.status === 200 && !pub.found) { err.textContent = "הקורס בקישור לא נמצא. אפשר להיכנס עם הקוד שקיבלתם."; err.hidden = false; }
+  const btn = el("button", { class: "btn" }, "כניסה");
+  const go = async () => {
+    const c = fixKeys(code.value).trim();
+    if (!c) { err.textContent = "צריך להקליד את הקוד."; err.hidden = false; return; }
+    btn.disabled = true; btn.textContent = "בודקת...";
+    const d = await post("login", { code: c, sid: store.get(SIDKEY) || "" }, { token: "-" });
+    btn.disabled = false; btn.textContent = "כניסה";
+    if (!d.token) { err.textContent = d.error === "down" ? ERR.down : "הקוד לא מוכר. בדקו שהוא הוקלד נכון."; err.hidden = false; return; }
+    store.set(SIDKEY, d.sid);
+    const sess = { token: d.token, role: d.role, code: keep.checked ? c : undefined };
+    if (d.role === "l") { store.set(LECT, sess); location.href = location.pathname + (CID ? "?c=" + CID : ""); return; }
+    store.set("adva.c." + d.cid, sess);
+    if (d.cid !== CID) { location.href = location.pathname + "?c=" + d.cid; return; }
+    S = sess; history.replaceState(null, "", location.pathname + location.search); boot();
+  };
+  btn.addEventListener("click", go);
+  code.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+  code.addEventListener("input", () => { const v = fixKeys(code.value); if (v !== code.value) code.value = v; });
+  $app.append(el("div", { class: "gate fade" },
+    el("div", { class: "gate-band", html: bandArt() }),
+    el("div", { class: "gate-card" }, icon("cap", "big"),
+      el("h1", {}, pub.title || "סביבת הקורסים"),
+      el("p", { class: "who" }, pub.lecturer || ""),
+      el("label", { class: "f", style: "text-align:right" }, "הקוד שלך"), code, err, btn,
+      el("label", { class: "check" }, keep, "להישאר מחובר/ת במכשיר הזה"),
+      el("p", { class: "hint" }, "סטודנטים — קוד הקורס שקיבלתם. מרצה — קוד המרצה.")),
+    el("div", { class: "gate-foot" }, "סביבת הקורסים" + (pub.lecturer ? " · " + pub.lecturer : ""))));
+  if (!pre) code.focus();
+}
+
+/* ───────── אזור הניהול של המרצה: הקורסים שלי ───────── */
+function topBar(right){
+  return el("header", { class: "hdr" }, el("div", { class: "top" },
+    el("a", { class: "brand", href: location.pathname }, icon("cap"), el("span", { class: "brand-name" }, "סביבת הקורסים"),
+      el("span", { class: "brand-sep" }), el("span", { class: "brand-who" }, (D && D.lecturer.name) || (C && C.lecturer) || "")),
+    el("span", { class: "top-gap" }), ...right));
+}
+function exitBtn(){
+  const b = el("button", { class: "round", title: "יציאה" }, line("out"), "יציאה");
+  b.addEventListener("click", () => { store.del(sessKey()); S = null; C = null; D = null; location.href = location.pathname; });
+  return b;
+}
+let D = null; // לוח המרצה: { lecturer, courses }
+async function renderDashboard(){
+  const d = await call("dashboard", {});
+  if (!d.courses) { $app.textContent = ""; $app.append(el("div", { class: "loading" }, el("div", {}, errText(d)), el("button", { class: "btn", onclick: renderDashboard }, "לנסות שוב"))); return; }
+  D = d;
+  document.title = "הקורסים שלי · " + d.lecturer.name;
+  $app.textContent = "";
+  const grid = el("div", { class: "lessons courses" });
+  d.courses.forEach((c, i) => {
+    const news = (c.newSubs || 0) + (c.newMsgs || 0);
+    grid.append(el("a", { class: "lesson", href: "?c=" + c.id },
+      el("span", { class: "lesson-art", html: lessonArt(i + 3) }),
+      el("span", { class: "lesson-body" },
+        el("span", { class: "lesson-title", style: "font-size:19px" }, c.title || "קורס ללא שם"),
+        el("span", { class: "lesson-rule" }),
+        el("span", { class: "bl-s" }, c.lessons + " שיעורים · " + c.items + " חומרים"),
+        el("span", { class: "lesson-meta" },
+          el("span", { class: "tag date", dir: "ltr" }, c.studentCode),
+          c.newSubs ? el("span", { class: "tag new" }, c.newSubs + " הגשות חדשות") : null,
+          c.newMsgs ? el("span", { class: "tag task" }, c.newMsgs + " הודעות חדשות") : null,
+          !news ? el("span", { class: "tag" }, c.subs + " הגשות") : null))));
+  });
+  grid.append(el("button", { class: "lesson add", onclick: newCourse }, icon("plus"), "קורס חדש"));
+  const news = d.courses.reduce((n, c) => n + (c.newSubs || 0) + (c.newMsgs || 0), 0);
+  $app.append(topBar([el("span", { class: "chip l" }, "מרצה · ניהול"), exitBtn()]),
+    el("main", { class: "fade" },
+      el("section", { class: "hero" }, el("div", { class: "hero-band", html: bandArt() }),
+        el("div", { class: "hero-row" },
+          el("div", { class: "hero-card" }, el("div", { class: "eyebrow" }, el("b", {}, d.lecturer.name), el("span", {}, "אזור הניהול")),
+            el("h1", { class: "hero-title" }, "הקורסים שלי"),
+            el("p", { class: "hero-about" }, "כל קורס עם סילבוס, שיעורים וחומרים, תיבת הגשות שרק את רואה, והודעות מהסטודנטים."),
+            el("div", { class: "hero-actions" }, el("button", { class: "btn sm", onclick: newCourse }, icon("plus"), "קורס חדש"),
+              el("button", { class: "btn ghost sm", onclick: profileDialog }, icon("key"), "הפרטים שלי וקוד המרצה"))),
+          el("div", { class: "board" }, el("h2", {}, icon("sparkle"), "מה מחכה לך"),
+            news ? el("ul", { class: "board-list" }, d.courses.filter((c) => c.newSubs || c.newMsgs).slice(0, 4).map((c) =>
+              el("li", { onclick: () => location.href = "?c=" + c.id + (c.newSubs ? "#subs" : "#inbox") }, icon(c.newSubs ? "inbox" : "chat"),
+                el("div", { style: "min-width:0" }, el("div", { class: "bl-t" }, c.title || "קורס ללא שם"),
+                  el("div", { class: "bl-s" }, [c.newSubs ? c.newSubs + " הגשות חדשות" : "", c.newMsgs ? c.newMsgs + " הודעות חדשות" : ""].filter(Boolean).join(" · "))))))
+              : el("div", { class: "board-empty" }, d.courses.length ? "אין הגשות או הודעות חדשות." : "מתחילים בהוספת קורס ראשון."),
+            !d.lecturer.mailReady ? el("p", { class: "hint" }, "שליחת ההודעות למייל עוד לא חוברה — בינתיים הן נשמרות כאן.") : null))),
+      el("section", { class: "sec" }, el("div", { class: "wrap" }, el("h2", { class: "sec-h" }, "הקורסים"), grid))),
+    el("footer", {}, "סביבת הקורסים · " + d.lecturer.name));
+}
+function newCourse(){
+  const t = el("input", { class: "t", placeholder: "אפשר גם בלי — ולהוסיף אחר כך" });
+  const ab = el("textarea", { class: "t", style: "min-height:80px", placeholder: "לא חובה" });
+  dialog("קורס חדש", "cap", [field("שם הקורס", t), field("תיאור קצר", ab)], (close) => {
+    const b = el("button", { class: "btn" }, "יצירת הקורס");
+    b.addEventListener("click", async () => {
+      b.disabled = true;
+      const d = await call("courseCreate", { title: t.value, about: ab.value });
+      b.disabled = false;
+      if (d.created) { close(); location.href = "?c=" + d.created; } else toast(errText(d));
+    });
+    return [b, el("button", { class: "btn ghost", onclick: close }, "ביטול")];
+  });
+}
+function profileDialog(){
+  const L0 = (D && D.lecturer) || { name: C ? C.lecturer : "", email: C ? C.email : "" };
+  const n = el("input", { class: "t", value: L0.name || "" }), em = el("input", { class: "t", type: "email", dir: "ltr", value: L0.email || "" });
+  const code = el("input", { class: "t", dir: "ltr", placeholder: "לא חובה — רק כדי להחליף", autocomplete: "off" });
+  const err = el("div", { class: "msg err" }); err.hidden = true;
+  dialog("הפרטים שלי", "key", [field("שם", n, "מופיע לסטודנטים"), field("המייל שאליו מגיעות ההודעות", em),
+    field("קוד מרצה חדש", code, "8–24 אותיות לטיניות וספרות. הקוד הקודם יפסיק לעבוד"),
+    el("p", { class: "hint" }, "קוד המרצה אישי ופותח את אזור הניהול. לא משתפים אותו עם הסטודנטים."), err], (close) => {
+    const b = el("button", { class: "btn" }, "שמירה");
+    b.addEventListener("click", async () => {
+      b.disabled = true; err.hidden = true;
+      let d = await call("profileSave", { name: n.value, email: em.value });
+      if (d.courses && code.value.trim()) {
+        const nc = fixKeys(code.value).trim();
+        d = await call("lecturerCode", { code: nc });
+        if (d.courses) { const sess = store.get(LECT); if (sess && sess.code) store.set(LECT, { ...sess, code: nc }); }
+      }
+      b.disabled = false;
+      if (!d.courses) { err.textContent = errText(d); err.hidden = false; return; }
+      close(); toast("נשמר"); if (C) { await reload(); shell(); route(); } else renderDashboard();
+    });
+    return [b, el("button", { class: "btn ghost", onclick: close }, "ביטול")];
+  });
+}
+
+/* ───────── הקורס ───────── */
+let C = null;      // הקורס כפי שהשרת החזיר
+let NAV = null;
+const L = () => C && C.role === "l";
+const lecturerName = () => (C && C.lecturer) || "המרצה";
+const firstName = () => lecturerName();
+
+async function boot(){
+  if (!S) return renderGate();
+  if (!CID) { if (S.role === "l") return renderDashboard(); store.del(KEY); S = null; return renderGate(); }
+  let d;
+  try { d = await call("get", {}); } catch(e){ return; }
+  if (d.status === 403 && S.role === "l") { S = store.get(KEY); if (S) return boot(); return renderGate(); }
+  if (d.status === 404) { if (S.role === "l") { location.href = location.pathname; return; } store.del(KEY); S = null; return renderGate("הקורס לא נמצא."); }
+  if (d.status === 403) { store.del(KEY); S = null; return renderGate(); }
+  if (!d.id) { $app.textContent = ""; $app.append(el("div", { class: "loading" }, el("div", {}, ERR.down), el("button", { class: "btn", onclick: boot }, "לנסות שוב"))); return; }
+  C = d;
+  shell();
+  route();
+}
+
+function shell(){
+  document.title = (C.title || "סביבת הקורס") + (C.lecturer ? " · " + C.lecturer : "");
+  $app.textContent = "";
+  const tabs = [["", null, "השיעורים"], ["syllabus", null, "סילבוס"]];
+  if (L()) tabs.push(["subs", null, "תיבת ההגשות", C.newSubs], ["inbox", null, "הודעות", C.newMsgs], ["settings", null, "קוד והגדרות"]);
+  else tabs.push(["submit", null, "הגשת תוצר"], ["write", null, "הודעה ל" + lecturerName()]);
+  NAV = el("nav", { class: "nav", "aria-label": "ניווט בקורס" });
+  const ICONS_NAV = { "": "layers", syllabus: "book", submit: "upload", write: "letter", subs: "inbox", inbox: "chat", settings: "key" };
+  for (const [h, , label, badge] of tabs) {
+    const b = el("button", { "data-h": h, onclick: () => go(h) }, icon(ICONS_NAV[h]), label, badge ? el("span", { class: "badge", "aria-label": badge + " חדשות" }, String(badge)) : null);
+    NAV.append(b);
+  }
+  $app.append(topBar([
+      L() ? el("a", { class: "round", href: location.pathname }, "כל הקורסים") : null,
+      el("span", { class: "chip" + (L() ? " l" : "") }, L() ? "מרצה · עריכה" : "סטודנט/ית"),
+      exitBtn()].filter(Boolean)),
+    NAV,
+    el("main", { id: "view" }),
+    el("footer", {}, (C.title || "סביבת הקורסים") + (C.lecturer ? " · " + C.lecturer : "")));
+}
+function go(h){ if (("#" + h) === location.hash || (!h && !location.hash)) route(); else location.hash = h; }
+window.addEventListener("hashchange", () => { if (C) route(); });
+
+function route(){
+  const h = location.hash.replace(/^#/, "");
+  const [k, v] = h.split("=");
+  const tab = k === "lesson" ? "" : k;
+  NAV.querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.h === tab && k !== "lesson"));
+  const view = document.getElementById("view");
+  view.textContent = "";
+  const page = el("div", { class: "fade" });
+  view.append(page);
+  if (k === "lesson") viewLesson(page, v);
+  else if (k === "syllabus") viewSyllabus(page);
+  else if (k === "submit") viewSubmit(page, v);
+  else if (k === "write") viewWrite(page);
+  else if (k === "subs" && L()) viewSubs(page);
+  else if (k === "inbox" && L()) viewInbox(page);
+  else if (k === "settings" && L()) viewSettings(page);
+  else viewHome(page);
+  if (k) window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+}
+function refreshBadges(){
+  NAV.querySelectorAll("button").forEach((b) => {
+    const n = b.dataset.h === "subs" ? C.newSubs : b.dataset.h === "inbox" ? C.newMsgs : null;
+    if (n == null) return;
+    const old = b.querySelector(".badge"); if (old) old.remove();
+    if (n) b.append(el("span", { class: "badge" }, String(n)));
+  });
+}
+async function reload(){ const d = await call("get", {}); if (d.id) { C = d; refreshBadges(); } }
+// עדכון שהשרת החזיר (הקורס המעודכן) — בלי לאבד את מצב הספירה
+function apply(d){ if (d && d.id) { const keep = { newSubs: C.newSubs, newMsgs: C.newMsgs, mailReady: C.mailReady }; C = { ...d, role: "l", ...keep }; return true; } toast(errText(d || {})); return false; }
+
+/* ── דף הבית: באנר, סילבוס בקצרה, השיעורים ── */
+function viewHome(page){
+  // באנר
+  const titleEl = el("h1", { class: "hero-title" + (C.title ? "" : " empty") }, C.title || (L() ? "הוסיפו כאן את שם הקורס" : "סביבת הקורס"));
+  const acts = el("div", { class: "hero-actions" });
+  if (L()) acts.append(el("button", { class: "btn ghost sm", onclick: editCourse }, line("edit"), "עריכת השם והתיאור"));
+  else acts.append(el("button", { class: "btn sm", onclick: () => go("submit") }, icon("upload"), "הגשת תוצר"),
+    el("button", { class: "btn sky sm", onclick: () => go("write") }, icon("letter"), "הודעה ל" + firstName()));
+  const board = el("div", { class: "board" });
+  if (L()) {
+    board.append(el("h2", {}, icon("sparkle"), "מה מחכה לך"));
+    const ul = el("ul", { class: "board-list" });
+    ul.append(el("li", { onclick: () => go("subs") }, icon("inbox"), el("div", {}, el("div", { class: "bl-t" }, C.newSubs ? C.newSubs + " הגשות חדשות" : "אין הגשות חדשות"), el("div", { class: "bl-s" }, "רק את/ה רואה אותן"))),
+      el("li", { onclick: () => go("inbox") }, icon("chat"), el("div", {}, el("div", { class: "bl-t" }, C.newMsgs ? C.newMsgs + " הודעות חדשות" : "אין הודעות חדשות"), el("div", { class: "bl-s" }, C.email ? "נשלחות גם ל-" + C.email : "נשמרות כאן"))),
+      el("li", { onclick: () => go("settings") }, icon("key"), el("div", {}, el("div", { class: "bl-t" }, "קוד לסטודנטים: ", el("span", { dir: "ltr" }, C.studentCode)), el("div", { class: "bl-s" }, "קישור, QR והודעה מוכנה"))));
+    board.append(ul);
+  } else {
+    board.append(el("h2", {}, icon("sparkle"), "חדש בקורס"));
+    const recent = [];
+    C.lessons.forEach((l, i) => (l.items || []).forEach((it) => recent.push({ it, l, i })));
+    (C.syllabus.items || []).forEach((it) => recent.push({ it, l: null, i: -1 }));
+    recent.sort((a, b) => String(b.it.at).localeCompare(String(a.it.at)));
+    if (!recent.length) board.append(el("div", { class: "board-empty" }, "החומרים יופיעו כאן כשיעלו."));
+    else {
+      const ul = el("ul", { class: "board-list" });
+      for (const { it, l } of recent.slice(0, 4)) ul.append(el("li", { onclick: () => go(l ? "lesson=" + l.id : "syllabus") }, ftBadge(it),
+        el("div", { style: "min-width:0" }, el("div", { class: "bl-t" }, it.title), el("div", { class: "bl-s" }, (l ? l.title : "סילבוס") + " · " + fmtDate(it.at)))));
+      board.append(ul);
+    }
+  }
+  page.append(el("section", { class: "hero" },
+    el("div", { class: "hero-band", html: bandArt() }),
+    el("div", { class: "hero-row" },
+      el("div", { class: "hero-card" },
+        el("div", { class: "eyebrow" }, C.lecturer ? el("b", {}, C.lecturer) : null, el("span", {}, C.lessons.length ? C.lessons.length + " שיעורים" : "")),
+        titleEl, C.about ? el("p", { class: "hero-about" }, C.about) : null, acts),
+      board)));
+
+  // סילבוס בקצרה
+  const syl = el("div", { class: "card" }, el("div", { class: "card-h" }, icon("book"),
+    el("div", { class: "grow" }, el("h2", {}, "סילבוס"), el("p", { class: "sub" }, C.syllabus.items.length ? C.syllabus.items.length + " קבצים וקישורים" : "מטרות הקורס, דרישות ומקורות")),
+    el("button", { class: "btn ghost sm", onclick: () => go("syllabus") }, L() ? "עריכת הסילבוס" : "לסילבוס המלא")));
+  if (C.syllabus.text) syl.append(el("div", { class: "syl-preview" }, rich(C.syllabus.text)));
+  else syl.append(el("div", { class: "empty" }, L() ? "עוד אין סילבוס. אפשר לכתוב אותו כאן, או להעלות קובץ." : "הסילבוס יעלה בקרוב."));
+  page.append(el("div", { class: "wrap" }, syl));
+
+  // השיעורים
+  const grid = el("div", { class: "lessons" });
+  C.lessons.forEach((l, i) => {
+    const fresh = (l.items || []).some((it) => Date.now() - Date.parse(it.at) < 7 * 864e5);
+    grid.append(el("button", { class: "lesson", onclick: () => go("lesson=" + l.id), "aria-label": "שיעור " + (i + 1) + ": " + l.title },
+      el("span", { class: "lesson-art", html: lessonArt(i) }),
+      el("span", { class: "lesson-body" },
+        el("span", { class: "lesson-n" }, pad2(i + 1)), el("span", { class: "lesson-rule" }), el("span", { class: "lesson-title" }, l.title),
+        el("span", { class: "lesson-meta" },
+          l.date ? el("span", { class: "tag date" }, fmtDate(l.date)) : null,
+          el("span", { class: "tag" }, (l.items || []).length + " חומרים"),
+          l.task ? el("span", { class: "tag task" }, "מטלה") : null,
+          fresh && !L() ? el("span", { class: "tag new" }, "חדש") : null))));
+  });
+  if (L()) grid.append(el("button", { class: "lesson add", onclick: () => editLesson(null) }, icon("plus"), "שיעור חדש"));
+  page.append(el("section", { class: "sec" }, el("div", { class: "wrap" },
+    el("h2", { class: "sec-h" }, "השיעורים"),
+    !C.lessons.length && !L() ? el("div", { class: "empty" }, "השיעורים יופיעו כאן.") : grid)));
+}
+
+function editCourse(){
+  const t = el("input", { class: "t", value: C.title }), ab = el("textarea", { class: "t", style: "min-height:90px" }, C.about);
+  dialog("שם הקורס ותיאור", "cap", [field("שם הקורס", t), field("תיאור קצר", ab, "שורה או שתיים, מופיע בראש האתר")], (close) => [
+    el("button", { class: "btn", onclick: async () => { const d = await call("save", { patch: { title: t.value, about: ab.value } }); if (apply(d)) { close(); shell(); route(); toast("נשמר"); } } }, "שמירה"),
+    el("button", { class: "btn ghost", onclick: close }, "ביטול")]);
+}
+
+/* ── רשימת חומרים (משותפת לשיעור ולסילבוס) ── */
+function itemsList(where, items){
+  const box = el("div");
+  const ul = el("ul", { class: "items" });
+  if (!items.length) box.append(el("div", { class: "empty" }, L() ? "עוד אין כאן חומרים. הוסיפו קובץ או קישור." : "החומרים יעלו בקרוב."));
+  items.forEach((it, i) => {
+    const acts = el("div", { class: "item-acts" });
+    if (it.kind === "file") {
+      acts.append(el("button", { class: "mini view", onclick: () => openFile(it, false) }, line("eye"), "צפייה"),
+        el("button", { class: "mini down", onclick: () => openFile(it, true) }, line("down"), "הורדה"));
+    } else {
+      acts.append(el("a", { class: "mini view", href: it.url, target: "_blank", rel: "noopener" }, line("open"), "פתיחה"));
+    }
+    if (L()) {
+      acts.append(el("button", { class: "mini edit", onclick: () => editItem(where, it) }, line("edit"), "עריכה"),
+        el("button", { class: "mini del", onclick: async () => {
+          if (!(await confirmBox("מחיקה", "למחוק את \"" + it.title + "\"?" + (it.kind === "file" ? " הקובץ יימחק גם מהשמירה." : "")))) return;
+          if (apply(await call("itemDelete", { where, itemId: it.id }))) { route(); toast("נמחק"); }
+        } }, line("trash"), "מחיקה"));
+      if (items.length > 1) acts.append(
+        el("button", { class: "mini icon", title: "למעלה", "aria-label": "הזזה למעלה", disabled: i === 0 ? true : null, onclick: async () => { if (apply(await call("itemMove", { where, itemId: it.id, dir: "up" }))) route(); } }, line("up")),
+        el("button", { class: "mini icon", title: "למטה", "aria-label": "הזזה למטה", disabled: i === items.length - 1 ? true : null, onclick: async () => { if (apply(await call("itemMove", { where, itemId: it.id, dir: "down" }))) route(); } }, line("dn")));
+    }
+    const meta = el("div", { class: "item-s" });
+    if (it.kind === "file") meta.append(el("span", {}, FT[ftOf(it)].label), it.size ? el("span", {}, fmtSize(it.size)) : null);
+    else meta.append(el("span", { dir: "ltr" }, (it.url || "").replace(/^https?:\/\/(www\.)?/, "").split("/")[0]));
+    meta.append(el("span", {}, "עלה ב-" + fmtDate(it.at)));
+    ul.append(el("li", { class: "item" }, ftBadge(it), el("div", { class: "item-main" }, el("div", { class: "item-t" }, it.title), meta, it.note ? el("div", { class: "item-note" }, it.note) : null), acts));
+  });
+  if (items.length) box.append(ul);
+  if (L()) {
+    const prog = el("div", { class: "prog" }, el("i")); prog.hidden = true;
+    const status = el("div", { class: "hint" });
+    const pick = el("input", { type: "file", multiple: true, hidden: true });
+    pick.addEventListener("change", async () => {
+      const files = [...pick.files]; pick.value = "";
+      for (let n = 0; n < files.length; n++) {
+        const f = files[n];
+        prog.hidden = false; status.textContent = "מעלה " + (files.length > 1 ? "(" + (n + 1) + "/" + files.length + ") " : "") + f.name + "...";
+        try {
+          const up = await upload(f, "mat", (p) => prog.firstChild.style.width = Math.round(p * 100) + "%");
+          if (!apply(await call("itemSave", { where, item: { kind: "file", ...up, title: f.name.replace(/\.[^.]+$/, "") } }))) break;
+        } catch(e){ if (e.message !== "login") toast(e.message); break; }
+      }
+      prog.hidden = true; prog.firstChild.style.width = "0"; status.textContent = "";
+      route();
+    });
+    box.append(el("div", { class: "adder" },
+      el("button", { class: "btn sm", onclick: () => pick.click() }, line("file"), "הוספת קבצים"),
+      el("button", { class: "btn sky sm", onclick: () => editItem(where, null) }, line("link"), "הוספת קישור"), pick),
+      prog, status, el("p", { class: "hint" }, "קבצים עד 50MB: PDF, Word, מצגות, תמונות, וידאו. סרטון ארוך — עדיף קישור (YouTube, Drive)."));
+  }
+  return box;
+}
+
+function editItem(where, it){
+  const isFile = it && it.kind === "file";
+  const t = el("input", { class: "t", value: it ? it.title : "", placeholder: isFile ? "" : "למשל: מאמר לקריאה לפני השיעור" });
+  const u = el("input", { class: "t", dir: "ltr", type: "url", value: it && !isFile ? it.url : "", placeholder: "https://..." });
+  const note = el("textarea", { class: "t", style: "min-height:70px" }, it ? it.note || "" : "");
+  const err = el("div", { class: "msg err" }); err.hidden = true;
+  let replacement = null;
+  const rep = el("input", { type: "file", hidden: true });
+  const repLabel = el("span", { class: "hint" }, isFile ? "הקובץ: " + it.name : "");
+  rep.addEventListener("change", () => { replacement = rep.files[0] || null; if (replacement) repLabel.textContent = "יוחלף ב: " + replacement.name; });
+  const body = [field("כותרת", t)];
+  if (!isFile) body.push(field("כתובת הקישור", u));
+  else body.push(el("div", { style: "margin-top:12px" }, el("button", { class: "mini", onclick: () => rep.click() }, line("file"), "החלפת הקובץ"), " ", repLabel, rep));
+  body.push(field("הערה לסטודנטים", note, "לא חובה"), err);
+  dialog(it ? "עריכה" : "קישור חדש", isFile ? "layers" : "sparkle", body, (close) => {
+    const save = el("button", { class: "btn" }, "שמירה");
+    save.addEventListener("click", async () => {
+      let item = { id: it ? it.id : undefined, title: t.value, note: note.value };
+      if (!isFile) {
+        const url = u.value.trim().replace(/^(?!https?:\/\/)/i, "https://");
+        if (!/^https?:\/\/\S+\.\S+/.test(url)) { err.textContent = "צריך כתובת קישור תקינה."; err.hidden = false; return; }
+        item = { ...item, kind: "link", url };
+      }
+      save.disabled = true;
+      try {
+        if (replacement) { save.textContent = "מעלה..."; const up = await upload(replacement, "mat"); item = { ...item, kind: "file", ...up }; }
+        if (apply(await call("itemSave", { where, item }))) { close(); route(); toast("נשמר"); }
+      } catch(e){ if (e.message !== "login") { err.textContent = e.message; err.hidden = false; } }
+      save.disabled = false; save.textContent = "שמירה";
+    });
+    return [save, el("button", { class: "btn ghost", onclick: close }, "ביטול")];
+  });
+}
+
+/* ── שיעור ── */
+function viewLesson(page, id){
+  const i = C.lessons.findIndex((l) => l.id === id);
+  if (i < 0) { go(""); return; }
+  const l = C.lessons[i];
+  const wrap = el("div", { class: "narrow", style: "padding-top:22px" });
+  wrap.append(el("button", { class: "back", onclick: () => go("") }, "→ לכל השיעורים"));
+  const tools = el("div", { class: "row", style: "margin-top:12px" });
+  if (L()) {
+    tools.append(el("button", { class: "btn ghost sm", onclick: () => editLesson(l) }, line("edit"), "עריכת השיעור"),
+      el("button", { class: "btn danger sm", onclick: async () => {
+        if (!(await confirmBox("מחיקת השיעור", "השיעור \"" + l.title + "\" וכל החומרים שבו יימחקו."))) return;
+        if (apply(await call("lessonDelete", { lessonId: l.id }))) { toast("השיעור נמחק"); go(""); }
+      } }, line("trash"), "מחיקה"));
+    if (i > 0) tools.append(el("button", { class: "mini", onclick: async () => { if (apply(await call("lessonMove", { lessonId: l.id, dir: "up" }))) route(); } }, line("up"), "הקדמה"));
+    if (i < C.lessons.length - 1) tools.append(el("button", { class: "mini", onclick: async () => { if (apply(await call("lessonMove", { lessonId: l.id, dir: "down" }))) route(); } }, line("dn"), "דחייה"));
+  }
+  wrap.append(el("div", { class: "page-h" }, el("div", { class: "page-n" }, pad2(i + 1)),
+    el("div", { style: "flex:1;min-width:0" }, el("h1", {}, l.title),
+      el("div", { class: "row", style: "margin-top:8px" }, l.date ? el("span", { class: "datechip" }, icon("calendar"), fmtDate(l.date)) : null, l.task ? el("span", { class: "tag task" }, "יש מטלה להגשה") : null),
+      tools)));
+  if (l.about) wrap.append(el("div", { class: "card" }, rich(l.about)));
+  const mats = el("div", { class: "card" }, el("div", { class: "card-h" }, icon("layers"), el("div", { class: "grow" }, el("h3", {}, "חומרי השיעור"), el("p", { class: "sub" }, "צפייה בדפדפן או הורדה למחשב"))));
+  mats.append(itemsList(l.id, l.items || []));
+  wrap.append(mats);
+  if (l.task || !L()) wrap.append(el("div", { class: "card", style: "display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--section)" }, icon("upload"),
+    el("div", { style: "flex:1;min-width:200px" }, el("b", {}, l.task ? "מטלה לשיעור הזה" : "יש לך תוצר מהשיעור?"), el("div", { class: "muted", style: "font-size:14.5px" }, "ההגשה מגיעה רק ל" + lecturerName() + ".")),
+    el("button", { class: "btn", onclick: () => go("submit=" + l.id) }, "להגשה")));
+  page.append(wrap);
+}
+
+function editLesson(l){
+  const t = el("input", { class: "t", value: l ? l.title : "", placeholder: "למשל: מבוא — מושגי יסוד" });
+  const dt = el("input", { class: "t", type: "date", value: l ? l.date : "" });
+  const ab = el("textarea", { class: "t" }, l ? l.about : "");
+  const task = el("input", { type: "checkbox", checked: l && l.task ? true : null });
+  dialog(l ? "עריכת השיעור" : "שיעור חדש", "layers", [field("שם השיעור", t), field("תאריך", dt, "לא חובה"),
+    field("על השיעור", ab, "מה לומדים, מה לקרוא לפני. אפשר **מודגש** ותבליטים עם -"),
+    el("label", { class: "check" }, task, "יש בשיעור הזה מטלה להגשה")], (close) => [
+    el("button", { class: "btn", onclick: async () => {
+      const d = await call("lessonSave", { lesson: { id: l ? l.id : undefined, title: t.value, date: dt.value, about: ab.value, task: task.checked } });
+      if (apply(d)) { close(); if (l) route(); else { const nl = C.lessons[C.lessons.length - 1]; go("lesson=" + nl.id); } toast("נשמר"); }
+    } }, l ? "שמירה" : "יצירת השיעור"),
+    el("button", { class: "btn ghost", onclick: close }, "ביטול")]);
+}
+
+/* ── סילבוס ── */
+function viewSyllabus(page){
+  const wrap = el("div", { class: "narrow", style: "padding-top:22px" });
+  wrap.append(el("button", { class: "back", onclick: () => go("") }, "→ לדף הקורס"),
+    el("div", { class: "page-h" }, icon("book"), el("div", {}, el("h1", {}, "סילבוס"), el("p", { class: "sub" }, C.title || ""))));
+  const card = el("div", { class: "card" });
+  const showText = () => {
+    card.textContent = "";
+    if (C.syllabus.text) card.append(rich(C.syllabus.text));
+    else card.append(el("div", { class: "empty" }, L() ? "עוד אין טקסט לסילבוס." : "הסילבוס יעלה בקרוב."));
+    if (L()) card.append(el("div", { class: "adder" }, el("button", { class: "btn sm", onclick: editText }, line("edit"), C.syllabus.text ? "עריכת הטקסט" : "כתיבת הסילבוס")));
+  };
+  const editText = () => {
+    card.textContent = "";
+    const ta = el("textarea", { class: "t", style: "min-height:380px" }, C.syllabus.text);
+    const prev = el("div", { class: "aside", style: "max-height:440px;overflow:auto" });
+    const upd = () => { prev.textContent = ""; prev.append(rich(ta.value)); };
+    ta.addEventListener("input", upd); upd();
+    card.append(el("div", { class: "formcols" }, el("div", {}, field("טקסט הסילבוס", ta, "# כותרת · - תבליט · 1. רשימה · **מודגש**")), el("div", {}, el("label", { class: "f" }, "כך זה ייראה"), prev)),
+      el("div", { class: "adder" },
+        el("button", { class: "btn", onclick: async () => { if (apply(await call("save", { patch: { syllabus: ta.value } }))) { showText(); toast("הסילבוס נשמר"); } } }, "שמירה"),
+        el("button", { class: "btn ghost", onclick: showText }, "ביטול")));
+    ta.focus();
+  };
+  showText();
+  wrap.append(card);
+  const files = el("div", { class: "card" }, el("div", { class: "card-h" }, icon("layers"), el("div", { class: "grow" }, el("h3", {}, "קבצים וקישורים לסילבוס"), el("p", { class: "sub" }, "למשל: הסילבוס כקובץ, רשימת קריאה, מחוון"))));
+  files.append(itemsList("syllabus", C.syllabus.items || []));
+  wrap.append(files);
+  page.append(wrap);
+}
+
+/* ── הגשת תוצר ── */
+function fileDrop(max, multiple){
+  const chosen = [];
+  const pick = el("input", { type: "file", hidden: true, multiple: multiple ? true : null });
+  const listEl = el("ul", { class: "files-chosen" });
+  const draw = () => {
+    listEl.textContent = "";
+    chosen.forEach((f, i) => listEl.append(el("li", {}, ftBadge({ kind: "file", name: f.name, type: f.type }), el("span", { class: "nm" }, f.name + " · " + fmtSize(f.size)),
+      el("button", { class: "mini icon del", "aria-label": "הסרה", onclick: () => { chosen.splice(i, 1); draw(); } }, line("trash")))));
+  };
+  const add = (files) => {
+    for (const f of files) {
+      if (f.size > max) { toast("\"" + f.name + "\" גדול מ-" + fmtSize(max)); continue; }
+      if (!multiple) chosen.length = 0;
+      if (chosen.length < 5) chosen.push(f);
+    }
+    draw();
+  };
+  pick.addEventListener("change", () => { add([...pick.files]); pick.value = ""; });
+  const drop = el("div", { class: "drop", tabindex: "0", role: "button", onclick: () => pick.click(), onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick.click(); } } },
+    icon("upload"), el("div", {}, el("b", {}, "בחירת " + (multiple ? "קבצים" : "קובץ")), " או גרירה לכאן"), el("div", { class: "hint" }, "עד " + fmtSize(max) + (multiple ? " לקובץ, עד 5 קבצים" : "")));
+  drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
+  drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+  drop.addEventListener("drop", (e) => { e.preventDefault(); drop.classList.remove("over"); add([...e.dataTransfer.files]); });
+  return { node: el("div", {}, drop, pick, listEl), files: chosen, reset(){ chosen.length = 0; draw(); } };
+}
+const NAMEKEY = "adva.name";
+
+function viewSubmit(page, lessonId){
+  const wrap = el("div", { class: "wrap", style: "padding-top:26px" });
+  wrap.append(el("div", { class: "page-h" }, icon("upload"), el("div", {}, el("h1", {}, "הגשת תוצר"), el("p", { class: "sub" }, "ההגשה מגיעה רק ל" + lecturerName() + ". סטודנטים אחרים לא רואים אותה."))));
+  const name = el("input", { class: "t", value: store.get(NAMEKEY) || "", autocomplete: "name" });
+  const sel = el("select", { class: "t" }, el("option", { value: "" }, "כללי — לא לשיעור מסוים"),
+    C.lessons.map((l, i) => el("option", { value: l.id, selected: l.id === lessonId ? true : null }, pad2(i + 1) + " · " + l.title + (l.task ? " (מטלה)" : ""))));
+  const title = el("input", { class: "t", placeholder: "למשל: עבודה מסכמת, תרגיל 2" });
+  const note = el("textarea", { class: "t", style: "min-height:90px", placeholder: "משהו שחשוב לך שהמרצה תדע" });
+  const link = el("input", { class: "t", dir: "ltr", type: "url", placeholder: "https://... (לא חובה)" });
+  const fd = fileDrop(25 * 1024 * 1024, true);
+  const prog = el("div", { class: "prog" }, el("i")); prog.hidden = true;
+  const out = el("div");
+  const send = el("button", { class: "btn", style: "margin-top:16px" }, icon("upload"), "הגשה");
+  send.addEventListener("click", async () => {
+    out.textContent = "";
+    const bad = (t) => out.append(el("div", { class: "msg err" }, t));
+    if (!name.value.trim()) return bad("צריך לכתוב שם.");
+    const url = link.value.trim();
+    if (!fd.files.length && !url) return bad("צריך לצרף קובץ או קישור.");
+    if (url && !/^https?:\/\/\S+\.\S+/.test(url)) return bad("הקישור צריך להתחיל ב-https://");
+    store.set(NAMEKEY, name.value.trim());
+    send.disabled = true; prog.hidden = false;
+    try {
+      const ups = [];
+      const total = fd.files.reduce((s, f) => s + f.size, 0) || 1; let done = 0;
+      for (const f of fd.files) { ups.push(await upload(f, "sub", (p) => prog.firstChild.style.width = Math.round((done + p * f.size) / total * 100) + "%")); done += f.size; }
+      const d = await call("submit", { name: name.value, lessonId: sel.value, title: title.value, note: note.value, link: url, files: ups });
+      if (!d.ok) throw new Error(errText(d));
+      out.append(el("div", { class: "msg ok" }, "ההגשה התקבלה. " + lecturerName() + " תראה אותה בתיבת ההגשות."));
+      fd.reset(); title.value = note.value = link.value = "";
+      loadMine();
+    } catch(e){ if (e.message !== "login") bad(e.message); }
+    send.disabled = false; prog.hidden = true; prog.firstChild.style.width = "0";
+  });
+  const form = el("div", { class: "card" },
+    el("div", { class: "two" }, field("שם", name), field("לאיזה שיעור", sel)),
+    field("כותרת", title, "לא חובה"),
+    el("label", { class: "f" }, "קבצים"), fd.node,
+    field("או קישור", link, "Drive, Canva, אתר"),
+    field("הערה", note, "לא חובה"),
+    prog, send, out);
+  const mine = el("div");
+  const loadMine = async () => {
+    const d = await call("mySubs", {});
+    mine.textContent = "";
+    if (!d.subs || !d.subs.length) { mine.append(el("p", {}, "עוד לא הגשת מהמכשיר הזה.")); return; }
+    for (const s of d.subs) mine.append(subCard(s, false, loadMine));
+  };
+  wrap.append(el("div", { class: "formcols" }, form,
+    el("div", {}, el("div", { class: "aside" }, el("h3", {}, icon("inbox"), "ההגשות שלך"), el("p", { style: "margin:0 0 10px" }, "רק את/ה ו" + lecturerName() + " רואים אותן. מוצגות ההגשות מהמכשיר הזה."), mine))));
+  page.append(wrap);
+  loadMine();
+}
+
+/* כרטיס הגשה — לסטודנט/ית (ההגשות שלי) ולמרצה (תיבת ההגשות) */
+const AVA = ["#1E7B3A", "#1F5F99", "#6B3FA0", "#2FA34F", "#C77A12", "#0E8A86"];
+const avatar = (name) => { const n = String(name || "?").trim(); let h = 0; for (const ch of n) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return el("div", { class: "ava", style: "background:" + AVA[h % AVA.length] }, n.charAt(0)); };
+function subCard(s, lect, after){
+  const files = el("div", { class: "entry-files" });
+  for (const f of s.files || []) files.append(el("div", { class: "entry-file" }, ftBadge({ kind: "file", ...f }), el("span", { class: "nm" }, f.name + (f.size ? " · " + fmtSize(f.size) : "")),
+    el("button", { class: "mini view", onclick: () => openFile(f, false) }, line("eye"), "צפייה"), el("button", { class: "mini down", onclick: () => openFile(f, true) }, line("down"), "הורדה")));
+  if (s.link) files.append(el("div", { class: "entry-file" }, ftBadge({ kind: "link", url: s.link }), el("span", { class: "nm", dir: "ltr" }, s.link), el("a", { class: "mini view", href: s.link, target: "_blank", rel: "noopener" }, line("open"), "פתיחה")));
+  const acts = el("div", { class: "entry-acts" });
+  if (lect) {
+    acts.append(el("button", { class: "mini" + (s.seen ? "" : " down"), onclick: async () => { await call("subSeen", { id: s.id, seen: !s.seen }); await reload(); after(); } }, line("check"), s.seen ? "סימון כחדשה" : "סימון כנקראה"));
+  }
+  acts.append(el("button", { class: "mini del", onclick: async () => {
+    if (!(await confirmBox("מחיקת ההגשה", "ההגשה והקבצים שלה יימחקו."))) return;
+    const d = await call("subDelete", { id: s.id }); if (d.ok) { toast("נמחקה"); if (lect) await reload(); after(); }
+  } }, line("trash"), "מחיקה"));
+  return el("div", { class: "entry" + (lect && !s.seen ? " unseen" : "") }, lect ? avatar(s.name) : null,
+    el("div", { class: "entry-main" },
+      el("div", { class: "entry-h" }, el("b", {}, lect ? s.name : (s.title || "הגשה")), el("span", {}, fmtWhen(s.at)),
+        s.lessonTitle ? el("span", { class: "tag task" }, s.lessonTitle) : el("span", { class: "tag" }, "כללי"), lect && !s.seen ? el("span", { class: "tag new" }, "חדשה") : null),
+      lect && s.title ? el("div", { style: "font-weight:600;margin-top:4px" }, s.title) : null,
+      s.note ? el("p", { class: "entry-text" }, s.note) : null, files, acts));
+}
+
+/* ── הודעה למרצה ── */
+function viewWrite(page){
+  const wrap = el("div", { class: "wrap", style: "padding-top:26px" });
+  wrap.append(el("div", { class: "page-h" }, icon("letter"), el("div", {}, el("h1", {}, "הודעה ל" + lecturerName()), el("p", { class: "sub" }, "ההודעה נשלחת למייל של " + lecturerName() + " ונשמרת באתר הקורס."))));
+  const name = el("input", { class: "t", value: store.get(NAMEKEY) || "", autocomplete: "name" });
+  const email = el("input", { class: "t", type: "email", dir: "ltr", value: store.get("adva.email") || "", placeholder: "לא חובה", autocomplete: "email" });
+  const text = el("textarea", { class: "t", style: "min-height:150px", placeholder: "מה תרצו לכתוב?" });
+  const link = el("input", { class: "t", dir: "ltr", type: "url", placeholder: "https://... (לא חובה)" });
+  const fd = fileDrop(15 * 1024 * 1024, false);
+  const today = new Date().toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const out = el("div");
+  const send = el("button", { class: "btn sky", style: "margin-top:16px" }, icon("letter"), "שליחה");
+  send.addEventListener("click", async () => {
+    out.textContent = "";
+    const bad = (t) => out.append(el("div", { class: "msg err" }, t));
+    if (!name.value.trim()) return bad("צריך לכתוב שם.");
+    if (!text.value.trim()) return bad("צריך לכתוב את ההודעה.");
+    const url = link.value.trim();
+    if (url && !/^https?:\/\/\S+\.\S+/.test(url)) return bad("הקישור צריך להתחיל ב-https://");
+    const em = email.value.trim();
+    if (em && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return bad("כתובת המייל לא תקינה.");
+    store.set(NAMEKEY, name.value.trim()); if (em) store.set("adva.email", em);
+    send.disabled = true; send.lastChild.textContent = "שולחת...";
+    try {
+      const file = fd.files[0] ? await upload(fd.files[0], "msg") : null;
+      const d = await call("message", { name: name.value, email: em, text: text.value, link: url, file });
+      if (!d.ok) throw new Error(errText(d));
+      out.append(el("div", { class: "msg ok" }, d.mailed ? "ההודעה נשלחה ל" + lecturerName() + "." : "ההודעה התקבלה ונשמרה באתר הקורס. " + lecturerName() + " תראה אותה כאן."));
+      text.value = link.value = ""; fd.reset();
+    } catch(e){ if (e.message !== "login") bad(e.message); }
+    send.disabled = false; send.lastChild.textContent = "שליחה";
+  });
+  wrap.append(el("div", { class: "formcols" },
+    el("div", { class: "card" },
+      el("div", { class: "row", style: "justify-content:space-between" }, el("span", { class: "datechip" }, icon("calendar"), today)),
+      el("div", { class: "two" }, field("שם", name), field("מייל לתשובה", email, "לא חובה")),
+      field("ההודעה", text),
+      el("label", { class: "f" }, "קובץ מצורף ", el("small", {}, "· לא חובה")), fd.node,
+      field("או קישור", link, "לא חובה"),
+      send, out),
+    el("div", { class: "aside" }, el("h3", {}, icon("chat"), "טוב לדעת"),
+      el("ul", {}, el("li", {}, "התאריך נרשם אוטומטית."),
+        el("li", {}, "מייל לתשובה — כדי ש" + lecturerName() + " תוכל לענות ישירות."),
+        el("li", {}, "עבודה להגשה? עדיף דרך ", el("a", { href: "#submit" }, "הגשת תוצר"), ", כדי שתישמר בתיבת ההגשות.")))));
+  page.append(wrap);
+}
+
+/* ── למרצה: תיבת ההגשות ── */
+async function viewSubs(page){
+  const wrap = el("div", { class: "narrow", style: "padding-top:26px" });
+  wrap.append(el("div", { class: "page-h" }, icon("inbox"), el("div", {}, el("h1", {}, "תיבת ההגשות"), el("p", { class: "sub" }, "רק את/ה רואה את ההגשות. אפשר לסנן לפי שיעור."))));
+  const filters = el("div", { class: "filters" });
+  const box = el("div", {}, el("div", { class: "loading" }, el("div", { class: "spin" })));
+  wrap.append(filters, box);
+  page.append(wrap);
+  let all = [], cur = "*";
+  const draw = () => {
+    filters.textContent = "";
+    const keys = [["*", "הכול", all.length], ["new", "חדשות", all.filter((s) => !s.seen).length], ["", "כללי", all.filter((s) => !s.lessonId).length]];
+    C.lessons.forEach((l, i) => { const n = all.filter((s) => s.lessonId === l.id).length; if (n) keys.push([l.id, pad2(i + 1) + " " + l.title, n]); });
+    for (const [k, label, n] of keys) if (k === "*" || n) filters.append(el("button", { class: cur === k ? "on" : "", onclick: () => { cur = k; draw(); } }, label + " (" + n + ")"));
+    box.textContent = "";
+    const shown = all.filter((s) => cur === "*" || (cur === "new" ? !s.seen : s.lessonId === cur));
+    if (!shown.length) { box.append(el("div", { class: "empty" }, all.length ? "אין הגשות בסינון הזה." : "עוד אין הגשות. כשסטודנטים יגישו — הן יופיעו כאן.")); return; }
+    shown.forEach((s) => box.append(subCard(s, true, load)));
+  };
+  const load = async () => { const d = await call("subs", {}); all = d.subs || []; draw(); };
+  load();
+}
+
+/* ── למרצה: הודעות ── */
+async function viewInbox(page){
+  const wrap = el("div", { class: "narrow", style: "padding-top:26px" });
+  wrap.append(el("div", { class: "page-h" }, icon("chat"), el("div", {}, el("h1", {}, "הודעות מהסטודנטים"), el("p", { class: "sub" }, C.email ? "כל הודעה נשלחת גם ל-" + C.email + ", ונשמרת כאן." : "ההודעות נשמרות כאן."))));
+  if (!C.mailReady) wrap.append(el("div", { class: "msg info", style: "margin:0 0 14px" }, "שליחת ההודעות למייל עוד לא חוברה (או שחסר מייל בפרטים שלך). בינתיים הן נשמרות כאן."));
+  const box = el("div", {}, el("div", { class: "loading" }, el("div", { class: "spin" })));
+  wrap.append(box); page.append(wrap);
+  const load = async () => {
+    const d = await call("messages", {});
+    box.textContent = "";
+    const msgs = d.msgs || [];
+    if (!msgs.length) { box.append(el("div", { class: "empty" }, "עוד אין הודעות.")); return; }
+    for (const m of msgs) {
+      const files = el("div", { class: "entry-files" });
+      if (m.file) files.append(el("div", { class: "entry-file" }, ftBadge({ kind: "file", ...m.file }), el("span", { class: "nm" }, m.file.name + (m.file.size ? " · " + fmtSize(m.file.size) : "")),
+        el("button", { class: "mini view", onclick: () => openFile(m.file, false) }, line("eye"), "צפייה"), el("button", { class: "mini down", onclick: () => openFile(m.file, true) }, line("down"), "הורדה")));
+      if (m.link) files.append(el("div", { class: "entry-file" }, ftBadge({ kind: "link", url: m.link }), el("span", { class: "nm", dir: "ltr" }, m.link), el("a", { class: "mini view", href: m.link, target: "_blank", rel: "noopener" }, line("open"), "פתיחה")));
+      const acts = el("div", { class: "entry-acts" });
+      if (m.email) acts.append(el("a", { class: "mini view", href: "mailto:" + m.email + "?subject=" + encodeURIComponent("תשובה: " + (C.title || "הקורס")) }, line("reply"), "תשובה במייל"));
+      acts.append(el("button", { class: "mini" + (m.seen ? "" : " down"), onclick: async () => { await call("msgSeen", { id: m.id, seen: !m.seen }); await reload(); load(); } }, line("check"), m.seen ? "סימון כחדשה" : "סימון כנקראה"),
+        el("button", { class: "mini del", onclick: async () => { if (!(await confirmBox("מחיקת ההודעה", "ההודעה תימחק מהאתר (לא מהמייל)."))) return; const r = await call("msgDelete", { id: m.id }); if (r.ok) { await reload(); load(); } } }, line("trash"), "מחיקה"));
+      box.append(el("div", { class: "entry" + (m.seen ? "" : " unseen") }, avatar(m.name),
+        el("div", { class: "entry-main" },
+          el("div", { class: "entry-h" }, el("b", {}, m.name), el("span", {}, fmtWhen(m.at)), m.email ? el("span", { dir: "ltr" }, m.email) : null, !m.seen ? el("span", { class: "tag new" }, "חדשה") : null),
+          el("p", { class: "entry-text" }, m.text), files, acts)));
+    }
+  };
+  load();
+}
+
+/* ── למרצה: קוד לסטודנטים והגדרות ── */
+function viewSettings(page){
+  const wrap = el("div", { class: "narrow", style: "padding-top:26px" });
+  wrap.append(el("div", { class: "page-h" }, icon("key"), el("div", {}, el("h1", {}, "קוד והגדרות"), el("p", { class: "sub" }, "הקוד לסטודנטים, קישור ו-QR, ופרטי הקורס."))));
+  const base = location.origin + location.pathname + "?c=" + C.id;
+  const link = base + "#k=" + C.studentCode;
+  const ready = "שלום לכולם,\nזה אתר הקורס" + (C.title ? " \"" + C.title + "\"" : "") + " — סילבוס, חומרי השיעורים, הגשת תוצרים והודעות אליי.\nכניסה: " + link + "\nקוד הקורס: " + C.studentCode + "\n" + (C.lecturer || "");
+  const qr = el("div", { class: "qr" }); qr.hidden = true;
+  const qrBtn = el("button", { class: "mini" }, "הצגת QR");
+  qrBtn.addEventListener("click", () => {
+    if (!qr.childNodes.length && window.QRCode) { try { new QRCode(qr, { text: link, width: 180, height: 180, correctLevel: QRCode.CorrectLevel.M }); } catch(e){} }
+    qr.hidden = !qr.hidden; qrBtn.textContent = qr.hidden ? "הצגת QR" : "הסתרת QR";
+  });
+  const custom = el("input", { class: "t", dir: "ltr", placeholder: "למשל ADVA2026", style: "max-width:240px" });
+  const cerr = el("div", { class: "msg err" }); cerr.hidden = true;
+  const setCode = async (code) => {
+    if (!(await confirmBox("קוד חדש לסטודנטים", "הקוד הקודם יפסיק לעבוד. סטודנטים שכבר נכנסו יצטרכו את הקוד החדש בכניסה הבאה.", "החלפה"))) return;
+    const d = await call("studentCode", { code });
+    if (d.id) { apply(d); route(); toast("הקוד הוחלף"); } else { cerr.textContent = errText(d); cerr.hidden = false; }
+  };
+  wrap.append(el("div", { class: "card" },
+    el("div", { class: "card-h" }, icon("key"), el("div", { class: "grow" }, el("h2", {}, "הקוד לסטודנטים"), el("p", { class: "sub" }, "קוד אחד לכל הקורס. הוא פותח צפייה בחומרים, הגשה והודעות — לא עריכה."))),
+    el("div", { class: "codebox" }, el("div", { class: "bigcode" }, C.studentCode),
+      el("div", { class: "row" }, el("button", { class: "mini", onclick: () => copy(ready, "ההודעה לסטודנטים הועתקה") }, line("copy"), "העתקת הודעה לסטודנטים"),
+        el("button", { class: "mini", onclick: () => copy(link, "הקישור הועתק") }, line("link"), "העתקת הקישור"),
+        el("a", { class: "mini", href: "https://wa.me/?text=" + encodeURIComponent(ready), target: "_blank", rel: "noopener" }, "שליחה בוואטסאפ"), qrBtn)),
+    qr, el("div", { class: "ready" }, ready),
+    el("label", { class: "f" }, "החלפת הקוד ", el("small", {}, "· קוד שקל לזכור, 6–16 אותיות לטיניות וספרות")),
+    el("div", { class: "row" }, custom, el("button", { class: "btn sm", onclick: () => setCode(custom.value) }, "קביעה"), el("button", { class: "btn ghost sm", onclick: () => setCode("") }, "קוד אקראי חדש")), cerr));
+
+  const t = el("input", { class: "t", value: C.title });
+  const ab = el("textarea", { class: "t", style: "min-height:80px" }, C.about);
+  const serr = el("div", { class: "msg err" }); serr.hidden = true;
+  wrap.append(el("div", { class: "card" },
+    el("div", { class: "card-h" }, icon("cap"), el("div", { class: "grow" }, el("h2", {}, "פרטי הקורס"))),
+    field("שם הקורס", t), field("תיאור קצר", ab), serr,
+    el("div", { class: "adder" }, el("button", { class: "btn", onclick: async () => {
+      const d = await call("save", { patch: { title: t.value, about: ab.value } });
+      if (d.id) { apply(d); shell(); route(); toast("נשמר"); } else { serr.textContent = errText(d); serr.hidden = false; }
+    } }, "שמירה"), el("button", { class: "btn ghost", onclick: profileDialog }, icon("key"), "השם, המייל וקוד המרצה"))));
+  wrap.append(el("div", { class: "card", style: "border-color:var(--coral-soft)" },
+    el("div", { class: "card-h" }, el("div", { class: "grow" }, el("h3", {}, "מחיקת הקורס"), el("p", { class: "sub" }, "נמחקים השיעורים, החומרים, ההגשות וההודעות. אי אפשר לשחזר."))),
+    el("button", { class: "btn danger", onclick: async () => {
+      if (!(await confirmBox("מחיקת הקורס", "למחוק את \"" + (C.title || "הקורס") + "\" עם כל מה שבו?"))) return;
+      const d = await call("courseDelete", { cid: C.id });
+      if (d.courses) location.href = location.pathname; else toast(errText(d));
+    } }, line("trash"), "מחיקת הקורס")));
+  page.append(wrap);
+}
+
+boot();
+</script>
+</body>
+</html>
