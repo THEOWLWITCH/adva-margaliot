@@ -9,6 +9,8 @@
 //   course:<cid>      → { id, title, about, syllabus:{text, items}, lessons:[...], code, createdAt, updatedAt }
 //   code:<CODE>       → { cid }                       (קוד סטודנטים; CODE מנורמל)
 //   sub:<cid>:<id>    → הגשה    { id, sid, name, lessonId, lessonTitle, title, note, link, files, at, seen }
+//   book:<cid>        → הפנקס של המרצה: { grades:{<task>:{<student>:ציון}}, notes, studentNotes:{<student>:הערה} }
+//                       (נפרד מהקורס — הסטודנטים לא רואים אותו)
 //   msg:<cid>:<id>    → הודעה   { id, sid, name, email, text, link, file, at, seen, mailed }
 //   fm:<path>         → { size, type, parts }          (פרטי קובץ שהועלה)
 // files: { put(key, bytes), get(key) → ArrayBuffer|null, del(key) } — הקבצים נשמרים בחלקים
@@ -141,7 +143,8 @@ function cleanItem(x, cid) {
 const lessonView = (l) => ({ id: l.id, title: l.title, date: l.date || '', about: l.about || '', items: l.items || [], task: !!l.task });
 function courseView(c, lec, role) {
   const v = { id: c.id, title: c.title || '', about: c.about || '', lecturer: lec.name, syllabus: { text: c.syllabus?.text || '', items: c.syllabus?.items || [] },
-    lessons: (c.lessons || []).map(lessonView), posts: c.posts || [], role, updatedAt: c.updatedAt };
+    lessons: (c.lessons || []).map(lessonView), posts: c.posts || [], role, updatedAt: c.updatedAt,
+    roster: (c.roster || []).map((x) => ({ id: x.id, name: x.name })), tasks: c.tasks || [] };
   if (role === 'l') { v.studentCode = c.code || ''; v.email = lec.email || ''; }
   return v;
 }
@@ -154,6 +157,10 @@ async function courseCard(store, c) {
   return { id: c.id, title: c.title || '', about: c.about || '', studentCode: c.code || '', lessons: (c.lessons || []).length,
     items: (c.lessons || []).reduce((n, l) => n + (l.items || []).length, 0) + (c.syllabus?.items || []).length,
     subs: subs.length, newSubs: subs.filter((x) => !x.seen).length, msgs: msgs.length, newMsgs: msgs.filter((x) => !x.seen).length,
+    students: (c.roster || []).length,
+    tasks: (c.tasks || []).map((t) => ({ id: t.id, title: t.title, due: t.due || '', team: !!t.team,
+      done: new Set(subs.filter((x) => x.taskId === t.id).flatMap((x) => x.studentIds || [])).size,
+      subs: subs.filter((x) => x.taskId === t.id).length })),
     createdAt: c.createdAt, updatedAt: c.updatedAt };
 }
 
@@ -217,7 +224,7 @@ export async function handle(body, ctx) {
     for (const x of await allFor(store, `sub:${c.id}:`)) (x.files || []).forEach(take);
     for (const m of await allFor(store, `msg:${c.id}:`)) take(m.file);
     await tryRemove(paths);
-    await store.delPrefix(`sub:${c.id}:`); await store.delPrefix(`msg:${c.id}:`);
+    await store.delPrefix(`sub:${c.id}:`); await store.delPrefix(`msg:${c.id}:`); await store.del('book:' + c.id);
     if (c.code) await store.del('code:' + normCode(c.code));
     await store.del('course:' + c.id);
   };
@@ -309,13 +316,20 @@ export async function handle(body, ctx) {
   // ── הגשות: רק המרצה רואה (וכל סטודנט/ית — את מה שהגיש/ה מהמכשיר שלו/ה) ──
   if (action === 'submit') {
     const name = line(body.name, 120);
-    if (!name) return [400, { error: 'name' }];
+    if (!name && !(Array.isArray(body.studentIds) && body.studentIds.length)) return [400, { error: 'name' }];
     const fl = (Array.isArray(body.files) ? body.files : []).slice(0, MAX_SUB_FILES).map(fileOf)
       .filter((f) => f && f.path.startsWith(`c/${cid}/sub/${own}/`) && safePath(f.path));
     const link = safeUrl(body.link);
     if (!fl.length && !link) return [400, { error: 'empty' }];
-    const lesson = (course.lessons || []).find((l) => l.id === body.lessonId);
-    const sub = { id: Date.now().toString(36) + randId(6), sid, name, lessonId: lesson ? lesson.id : '', lessonTitle: lesson ? lesson.title : '',
+    const task = (course.tasks || []).find((t) => t.id === body.taskId);
+    const lesson = (course.lessons || []).find((l) => l.id === (task ? task.lessonId : body.lessonId));
+    // מי הגיש/ה: מהרשימה של המרצה. במשימת צוות — כל חברי הצוות שסומנו.
+    const roster = new Set((course.roster || []).map((x) => x.id));
+    let studentIds = (Array.isArray(body.studentIds) ? body.studentIds : []).filter((x) => roster.has(x));
+    studentIds = [...new Set(task && task.team ? studentIds : studentIds.slice(0, 1))].slice(0, 12);
+    const names = studentIds.map((x) => course.roster.find((y) => y.id === x).name);
+    const sub = { id: Date.now().toString(36) + randId(6), sid, name: names.length ? names.join(', ') : name, studentIds,
+      taskId: task ? task.id : '', taskTitle: task ? task.title : '', lessonId: lesson ? lesson.id : '', lessonTitle: lesson ? lesson.title : '',
       title: line(body.title, 200), note: txt(body.note, 2000), link, files: fl, at: new Date().toISOString(), seen: false };
     await store.set(`sub:${cid}:${sub.id}`, sub);
     return [200, { ok: true, sub }];
@@ -373,6 +387,83 @@ export async function handle(body, ctx) {
   // ── מכאן: עריכת הקורס — למרצה בלבד ──
   if (!L) return deny();
   const view = () => [200, courseView(course, lec, 'l')];
+
+  // ── רשימת הסטודנטים ──
+  if (action === 'rosterAdd' || action === 'rosterRename' || action === 'rosterRemove') {
+    course.roster ||= [];
+    if (action === 'rosterAdd') {
+      const have = new Set(course.roster.map((x) => x.name));
+      for (const raw of String(body.text || '').split(/\r?\n|[,;\t]/)) {
+        const name = line(raw, 120);
+        if (!name || have.has(name) || course.roster.length >= 400) continue;
+        have.add(name); course.roster.push({ id: randId(8), name });
+      }
+      course.roster.sort((a, b) => a.name.localeCompare(b.name, 'he'));
+    } else {
+      const x = course.roster.find((y) => y.id === body.id);
+      if (!x) return [404, { error: 'missing' }];
+      if (action === 'rosterRename') { const n = line(body.name, 120); if (!n) return [400, { error: 'name' }]; x.name = n; }
+      else course.roster = course.roster.filter((y) => y !== x);
+    }
+    await save();
+    return view();
+  }
+
+  // ── משימות: שם, הסבר, מועד הגשה, משימת צוות, שיעור קשור ──
+  if (action === 'taskSave' || action === 'taskDelete') {
+    course.tasks ||= [];
+    const prev = course.tasks.find((t) => t.id === (body.task?.id || body.id));
+    if (action === 'taskDelete') {
+      if (!prev) return [404, { error: 'missing' }];
+      course.tasks = course.tasks.filter((t) => t !== prev);
+    } else {
+      const x = body.task || {};
+      const t = { id: prev ? prev.id : randId(8), title: line(x.title, 160), about: txt(x.about, 3000),
+        due: /^\d{4}-\d{2}-\d{2}$/.test(String(x.due || '')) ? x.due : '', team: !!x.team,
+        lessonId: (course.lessons || []).some((l) => l.id === x.lessonId) ? x.lessonId : '', createdAt: prev ? prev.createdAt : new Date().toISOString() };
+      if (!t.title) return [400, { error: 'name' }];
+      if (prev) course.tasks[course.tasks.indexOf(prev)] = t;
+      else { if (course.tasks.length >= 80) return [400, { error: 'too-many' }]; course.tasks.push(t); }
+      course.tasks.sort((a, b) => (a.due || '9999').localeCompare(b.due || '9999'));
+    }
+    await save();
+    return view();
+  }
+
+  // ── הפנקס: ציונים, הערות לעצמה, הערה לכל סטודנט/ית, והגשות ──
+  const bookKey = 'book:' + cid;
+  const getBook = async () => ({ grades: {}, notes: '', studentNotes: {}, ...((await store.get(bookKey)) || {}) });
+  if (action === 'book') return [200, { ...(await getBook()), subs: await allFor(store, `sub:${cid}:`) }];
+  if (action === 'gradeSet' || action === 'notesSave' || action === 'studentNote') {
+    const b = await getBook();
+    if (action === 'gradeSet') {
+      if (!(course.tasks || []).some((t) => t.id === body.taskId) || !(course.roster || []).some((x) => x.id === body.studentId)) return [404, { error: 'missing' }];
+      const g = line(body.grade, 20);
+      b.grades[body.taskId] ||= {};
+      if (g) b.grades[body.taskId][body.studentId] = g; else delete b.grades[body.taskId][body.studentId];
+    }
+    if (action === 'notesSave') b.notes = txt(body.notes, 20000);
+    if (action === 'studentNote') {
+      if (!(course.roster || []).some((x) => x.id === body.studentId)) return [404, { error: 'missing' }];
+      const n = txt(body.note, 3000);
+      if (n) b.studentNotes[body.studentId] = n; else delete b.studentNotes[body.studentId];
+    }
+    await store.set(bookKey, b);
+    return [200, { ok: true }];
+  }
+  // שיוך הגשה (למשל כשהשם לא היה ברשימה) — לסטודנטים ולמשימה
+  if (action === 'subAssign') {
+    const key = `sub:${cid}:${String(body.id || '').replace(/[^a-z0-9]/g, '')}`;
+    const sub = await store.get(key);
+    if (!sub) return [404, { error: 'missing' }];
+    const roster = new Set((course.roster || []).map((x) => x.id));
+    sub.studentIds = [...new Set((Array.isArray(body.studentIds) ? body.studentIds : []).filter((x) => roster.has(x)))];
+    const task = (course.tasks || []).find((t) => t.id === body.taskId);
+    if ('taskId' in body) { sub.taskId = task ? task.id : ''; sub.taskTitle = task ? task.title : ''; }
+    if (sub.studentIds.length) sub.name = sub.studentIds.map((x) => course.roster.find((y) => y.id === x).name).join(', ');
+    await store.set(key, sub);
+    return [200, { ok: true, sub }];
+  }
 
   // ── לוח ההודעות של המרצה: טקסט, ואפשר לצרף תמונה/קובץ וקישור ──
   if (action === 'postSave' || action === 'postDelete') {

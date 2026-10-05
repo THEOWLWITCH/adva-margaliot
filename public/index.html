@@ -154,6 +154,31 @@ main{min-height:40vh}
 .post-fig{display:block;padding:0;border:0;background:none;cursor:zoom-in;margin:10px 0 4px;max-width:100%}
 .post-img{display:block;max-width:100%;max-height:420px;border-radius:12px;box-shadow:0 4px 14px var(--shadow)}
 .post .entry-file{margin-top:8px}
+/* פנקס */
+.book-wrap{overflow-x:auto;margin:4px -6px 0;padding:0 6px 6px}
+table.book{border-collapse:separate;border-spacing:0;min-width:100%;font-size:14px}
+.book th,.book td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:center;vertical-align:middle;white-space:nowrap}
+.book thead th{background:var(--section);font-weight:600;position:sticky;top:0}
+.book thead th:first-child{border-top-right-radius:10px}.book thead th:last-child{border-top-left-radius:10px}
+.book th.nm{text-align:right;position:sticky;right:0;background:var(--card);z-index:1;min-width:150px}
+.book thead th.nm{background:var(--section);z-index:2}
+.th-t{font-weight:700;color:var(--ink)}.th-s{font-size:12px;color:var(--muted);font-weight:400}
+.book .who{border:0;background:none;padding:0;font:inherit;font-weight:600;color:var(--ink);cursor:pointer;text-align:right}
+.book .who:hover{color:var(--brand)}
+.st{display:inline-block;min-width:64px;font-size:12.5px;font-weight:700;padding:3px 8px;border-radius:999px;margin-inline-end:6px;border:1px solid transparent;background:none;font-family:inherit}
+.st.ok{color:var(--sage);background:var(--sage-soft);border-color:var(--sage-line);cursor:pointer}
+.st.late{color:var(--amber);background:var(--amber-soft);border-color:#F2C37A;cursor:pointer}
+.st.miss{color:var(--coral);background:var(--coral-soft)}
+.st.none{color:var(--muted)}
+input.grade{width:58px;border:1px solid var(--line);border-radius:8px;padding:4px 6px;text-align:center;background:var(--bg);font:inherit;font-size:14px;color:var(--ink);transition:background .3s}
+input.grade:focus{outline:2px solid var(--brand-2);border-color:transparent}
+input.grade.saved{background:var(--sage-soft)}
+.book td.avg{font-weight:700;color:var(--brand)}
+.tag.ok{border-color:var(--sage-line);color:var(--sage);background:var(--sage-soft)}
+.team-list{display:flex;flex-wrap:wrap;gap:6px}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:14px;cursor:pointer;background:var(--card)}
+.pill input{accent-color:var(--brand);width:16px;height:16px}
+.pill:has(input:checked){border-color:var(--brand-2);background:var(--brand-soft)}
 /* כפתורים */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:0 20px;border:1px solid var(--brand);border-radius:999px;background:var(--brand);color:var(--on-accent);font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;white-space:nowrap}
 .btn:hover{filter:brightness(1.06)}
@@ -427,6 +452,9 @@ const ICON = {
   // כובע סיום — מסך כניסה ולוגו
   cap(){ const [a, da] = G("#7FAF8A", "#5B6FB5"), [b, db] = G("#6A4FA3", "#9B7FD4");
     return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><path d="M24 9 3 19l21 10 21-10z" fill="url(#${a})"/><path d="M12 24v8c0 3.5 5.4 6.5 12 6.5S36 35.5 36 32v-8l-12 5.6z" fill="url(#${b})" opacity=".85"/><path d="M41 21v10" stroke="#F2A33A" stroke-width="2.4" stroke-linecap="round"/><circle cx="41" cy="33" r="2.8" fill="#F2A33A"/></svg>`; },
+  // מחברת — הפנקס
+  notebook(){ const [a, da] = G("#9B7FD4", "#6A4FA3"), [b, db] = G("#7FB58E", "#4F7D5C");
+    return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><rect x="10" y="6" width="28" height="36" rx="5" fill="url(#${a})"/><path d="M10 13h-3M10 21h-3M10 29h-3M10 37h-3" stroke="#6A4FA3" stroke-width="2.4" stroke-linecap="round"/><path d="M17 16h14M17 23h14M17 30h8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".85"/><path d="M29 38l3 3 7-8" stroke="url(#${b})" stroke-width="3.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="38" cy="8" r="3" fill="#F4B860"/></svg>`; },
   // רמקול — לוח ההודעות
   megaphone(){ const [a, da] = G("#9B7FD4", "#6A4FA3"), [b, db] = G("#E08DBE", "#F4B860");
     return `<svg viewBox="0 0 48 48"><defs>${da}${db}</defs><path d="M8 20h7l17-9v26l-17-9H8a3 3 0 0 1-3-3v-2a3 3 0 0 1 3-3z" fill="url(#${a})"/><path d="M14 28l3 10h5l-2-10" fill="url(#${a})" opacity=".6"/><path d="M37 17c3 2 4.5 4.5 4.5 7S40 29 37 31M39.5 12c4.5 3 7 7.3 7 12s-2.5 9-7 12" stroke="url(#${b})" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>`; },
@@ -767,7 +795,9 @@ async function renderDashboard(){
           el("span", { class: "tag date", dir: "ltr" }, c.studentCode),
           c.newSubs ? el("span", { class: "tag new" }, c.newSubs + " הגשות חדשות") : null,
           c.newMsgs ? el("span", { class: "tag task" }, c.newMsgs + " הודעות חדשות") : null,
-          !news ? el("span", { class: "tag" }, c.subs + " הגשות") : null))));
+          !news ? el("span", { class: "tag" }, c.subs + " הגשות") : null,
+          c.students ? el("span", { class: "tag" }, c.students + " סטודנטים") : null,
+          (() => { const nx = (c.tasks || []).filter((t) => t.due && t.due >= todayIL())[0]; return nx ? el("span", { class: "tag task" }, "הגשה הבאה " + fmtDue(nx.due)) : null; })()))));
   });
   grid.append(el("button", { class: "lesson add", onclick: newCourse }, icon("plus"), "קורס חדש"));
   const news = d.courses.reduce((n, c) => n + (c.newSubs || 0) + (c.newMsgs || 0), 0);
@@ -786,9 +816,21 @@ async function renderDashboard(){
                 el("div", { style: "min-width:0" }, el("div", { class: "bl-t" }, c.title || "קורס ללא שם"),
                   el("div", { class: "bl-s" }, [c.newSubs ? c.newSubs + " הגשות חדשות" : "", c.newMsgs ? c.newMsgs + " הודעות חדשות" : ""].filter(Boolean).join(" · "))))))
               : el("div", { class: "board-empty" }, d.courses.length ? "אין הגשות או הודעות חדשות." : "מתחילים בהוספת קורס ראשון."),
+            upcomingTasks(d.courses),
             !d.lecturer.mailReady ? el("p", { class: "hint" }, "שליחת ההודעות למייל עוד לא חוברה — בינתיים הן נשמרות כאן.") : null))),
       el("section", { class: "sec" }, el("div", { class: "wrap" }, el("h2", { class: "sec-h" }, "הקורסים"), grid))),
     el("footer", {}, "סביבת הקורסים · " + d.lecturer.name));
+}
+// משימות קרובות בכל הקורסים: מה צריך להגיע, ומי כבר הגיש
+function upcomingTasks(courses){
+  const all = [];
+  courses.forEach((c) => (c.tasks || []).forEach((t) => { if (t.due && t.due >= todayIL()) all.push({ c, t }); }));
+  all.sort((a, b) => a.t.due.localeCompare(b.t.due));
+  if (!all.length) return null;
+  return el("div", {}, el("h2", { style: "margin-top:10px" }, icon("notebook"), "הגשות קרובות"),
+    el("ul", { class: "board-list" }, all.slice(0, 5).map(({ c, t }) => el("li", { onclick: () => location.href = "?c=" + c.id + "#book" },
+      el("span", { class: "datechip", style: "padding:3px 9px;font-size:13px" }, fmtDue(t.due)),
+      el("div", { style: "min-width:0" }, el("div", { class: "bl-t" }, t.title), el("div", { class: "bl-s" }, (c.title || "קורס") + (c.students ? " · " + t.done + "/" + c.students + " הגישו" : " · " + t.subs + " הגשות")))))));
 }
 function newCourse(){
   const t = el("input", { class: "t", placeholder: "אפשר גם בלי — ולהוסיף אחר כך" });
@@ -854,10 +896,10 @@ function shell(){
   document.title = (C.title || "סביבת הקורס") + (C.lecturer ? " · " + C.lecturer : "");
   $app.textContent = "";
   const tabs = [["", null, "השיעורים"], ["syllabus", null, "סילבוס"]];
-  if (L()) tabs.push(["subs", null, "תיבת ההגשות", C.newSubs], ["inbox", null, "הודעות", C.newMsgs], ["settings", null, "קוד והגדרות"]);
+  if (L()) tabs.push(["book", null, "פנקס"], ["subs", null, "תיבת ההגשות", C.newSubs], ["inbox", null, "הודעות", C.newMsgs], ["settings", null, "קוד והגדרות"]);
   else tabs.push(["submit", null, "הגשת תוצר"], ["write", null, "הודעה ל" + lecturerName()]);
   NAV = el("nav", { class: "nav", "aria-label": "ניווט בקורס" });
-  const ICONS_NAV = { "": "layers", syllabus: "book", submit: "upload", write: "letter", subs: "inbox", inbox: "chat", settings: "key" };
+  const ICONS_NAV = { "": "layers", syllabus: "book", submit: "upload", write: "letter", subs: "inbox", inbox: "chat", settings: "key", book: "notebook" };
   for (const [h, , label, badge] of tabs) {
     const b = el("button", { "data-h": h, onclick: () => go(h) }, icon(ICONS_NAV[h]), label, badge ? el("span", { class: "badge", "aria-label": badge + " חדשות" }, String(badge)) : null);
     NAV.append(b);
@@ -887,6 +929,7 @@ function route(){
   else if (k === "submit") viewSubmit(page, v);
   else if (k === "write") viewWrite(page);
   else if (k === "subs" && L()) viewSubs(page);
+  else if (k === "book" && L()) viewBook(page);
   else if (k === "inbox" && L()) viewInbox(page);
   else if (k === "settings" && L()) viewSettings(page);
   else viewHome(page);
@@ -945,6 +988,20 @@ function viewHome(page){
   // לוח ההודעות — הדבר הראשון אחרי הכניסה לקורס
   page.append(el("div", { class: "wrap", style: "margin-bottom:16px" }, postsSection()));
 
+  // המשימות של הקורס — עם מועדי ההגשה (ולסטודנטים: מה כבר הגשתי מהמכשיר הזה)
+  const tasks = C.tasks || [];
+  if (tasks.length) {
+    const tc = el("div", { class: "card" }, el("div", { class: "card-h" }, icon("notebook"), el("div", { class: "grow" }, el("h2", {}, "משימות"),
+      el("p", { class: "sub" }, L() ? "המעקב המלא — בפנקס" : "מועדי ההגשה ומה כבר הגשת")),
+      L() ? el("button", { class: "btn ghost sm", onclick: () => go("book") }, "לפנקס") : null));
+    const list = el("div", { class: "items" });
+    const draw = (mine) => { list.textContent = ""; tasks.forEach((t) => list.append(taskRow(t, mine && mine.some((x) => x.taskId === t.id)))); };
+    draw(null);
+    if (!L()) call("mySubs", {}).then((d) => draw(d.subs || [])).catch(() => {});
+    tc.append(list);
+    page.append(el("div", { class: "wrap", style: "margin-bottom:16px" }, tc));
+  }
+
   // סילבוס בקצרה
   const syl = el("div", { class: "card" }, el("div", { class: "card-h" }, icon("book"),
     el("div", { class: "grow" }, el("h2", {}, "סילבוס"), el("p", { class: "sub" }, C.syllabus.items.length ? C.syllabus.items.length + " קבצים וקישורים" : "מטרות הקורס, דרישות ומקורות")),
@@ -964,7 +1021,7 @@ function viewHome(page){
         el("span", { class: "lesson-meta" },
           l.date ? el("span", { class: "tag date" }, fmtDate(l.date)) : null,
           el("span", { class: "tag" }, (l.items || []).length + " חומרים"),
-          l.task ? el("span", { class: "tag task" }, "מטלה") : null,
+          (C.tasks || []).some((t) => t.lessonId === l.id) ? el("span", { class: "tag task" }, "משימה") : null,
           fresh && !L() ? el("span", { class: "tag new" }, "חדש") : null))));
   });
   if (L()) grid.append(el("button", { class: "lesson add", onclick: () => editLesson(null) }, icon("plus"), "שיעור חדש"));
@@ -1191,9 +1248,18 @@ function viewLesson(page, id){
   const mats = el("div", { class: "card" }, el("div", { class: "card-h" }, icon("layers"), el("div", { class: "grow" }, el("h3", {}, "חומרי השיעור"), el("p", { class: "sub" }, "צפייה בדפדפן או הורדה"))));
   mats.append(itemsList(l.id, l.items || []));
   wrap.append(mats);
-  if (l.task || !L()) wrap.append(el("div", { class: "card", style: "display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--section)" }, icon("upload"),
-    el("div", { style: "flex:1;min-width:200px" }, el("b", {}, l.task ? "מטלה לשיעור הזה" : "יש לך תוצר מהשיעור?"), el("div", { class: "muted", style: "font-size:14.5px" }, "ההגשה מגיעה רק ל" + lecturerName() + ".")),
-    el("button", { class: "btn", onclick: () => go("submit=" + l.id) }, "להגשה")));
+  // משימות שקשורות לשיעור
+  const lt = (C.tasks || []).filter((t) => t.lessonId === l.id);
+  if (lt.length || L()) {
+    const tc = el("div", { class: "card" }, el("div", { class: "card-h" }, icon("notebook"), el("div", { class: "grow" }, el("h3", {}, "משימות לשיעור הזה"),
+      el("p", { class: "sub" }, "ההגשה מגיעה רק ל" + lecturerName() + ".")),
+      L() ? el("button", { class: "btn sm", onclick: () => taskEditor(null, l.id) }, icon("plus"), "משימה חדשה") : null));
+    if (!lt.length) tc.append(el("div", { class: "empty" }, "אין עדיין משימות לשיעור הזה."));
+    lt.forEach((t) => tc.append(taskRow(t)));
+    wrap.append(tc);
+  } else wrap.append(el("div", { class: "card", style: "display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--section)" }, icon("upload"),
+    el("div", { style: "flex:1;min-width:200px" }, el("b", {}, "יש לך תוצר מהשיעור?"), el("div", { class: "muted", style: "font-size:14.5px" }, "ההגשה מגיעה רק ל" + lecturerName() + ".")),
+    el("button", { class: "btn", onclick: () => go("submit") }, "להגשה")));
   page.append(wrap);
 }
 
@@ -1201,12 +1267,11 @@ function editLesson(l){
   const t = el("input", { class: "t", value: l ? l.title : "", placeholder: "למשל: מבוא — מושגי יסוד" });
   const dt = el("input", { class: "t", type: "date", value: l ? l.date : "" });
   const ab = el("textarea", { class: "t" }, l ? l.about : "");
-  const task = el("input", { type: "checkbox", checked: l && l.task ? true : null });
   dialog(l ? "עריכת השיעור" : "שיעור חדש", "layers", [field("שם השיעור", t), field("תאריך", dt, "לא חובה"),
     field("על השיעור", ab, "מה לומדים, מה לקרוא לפני. אפשר **מודגש** ותבליטים עם -"),
-    el("label", { class: "check" }, task, "יש בשיעור הזה מטלה להגשה")], (close) => [
+    el("p", { class: "hint" }, "משימות להגשה מוסיפים בתוך השיעור, או בפנקס.")], (close) => [
     el("button", { class: "btn", onclick: async () => {
-      const d = await call("lessonSave", { lesson: { id: l ? l.id : undefined, title: t.value, date: dt.value, about: ab.value, task: task.checked } });
+      const d = await call("lessonSave", { lesson: { id: l ? l.id : undefined, title: t.value, date: dt.value, about: ab.value } });
       if (apply(d)) { close(); if (l) route(); else { const nl = C.lessons[C.lessons.length - 1]; go("lesson=" + nl.id); } toast("נשמר"); }
     } }, l ? "שמירה" : "יצירת השיעור"),
     el("button", { class: "btn ghost", onclick: close }, "ביטול")]);
@@ -1272,12 +1337,37 @@ function fileDrop(max, multiple, label){
 }
 const NAMEKEY = "adva.name";
 
-function viewSubmit(page, lessonId){
+const fmtDue = (d) => d ? d.split("-").reverse().slice(0, 2).join(".") : "";
+const taskLabel = (t) => t.title + (t.due ? " · עד " + fmtDue(t.due) : "") + (t.team ? " · צוות" : "");
+const MEKEY = "adva.me." + CID; // השם שלי מהרשימה, במכשיר הזה
+function viewSubmit(page, taskId){
   const wrap = el("div", { class: "wrap", style: "padding-top:26px" });
   wrap.append(el("div", { class: "page-h" }, icon("upload"), el("div", {}, el("h1", {}, "הגשת תוצר"), el("p", { class: "sub" }, "ההגשה מגיעה רק ל" + lecturerName() + ". סטודנטים אחרים לא רואים אותה."))));
-  const name = el("input", { class: "t", value: store.get(NAMEKEY) || "", autocomplete: "name" });
-  const sel = el("select", { class: "t" }, el("option", { value: "" }, "כללי — לא לשיעור מסוים"),
-    C.lessons.map((l, i) => el("option", { value: l.id, selected: l.id === lessonId ? true : null }, pad2(i + 1) + " · " + l.title + (l.task ? " (מטלה)" : ""))));
+  // מי מגיש/ה: מהרשימה של המרצה (אם יש), ובמשימת צוות — גם חברי הצוות
+  const roster = C.roster || [], tasks = C.tasks || [];
+  const name = el("input", { class: "t", value: store.get(NAMEKEY) || "", autocomplete: "name", placeholder: "השם המלא" });
+  const who = el("select", { class: "t" }, el("option", { value: "" }, "בחירה מהרשימה..."),
+    roster.map((x) => el("option", { value: x.id, selected: x.id === store.get(MEKEY) ? true : null }, x.name)),
+    el("option", { value: "-" }, "השם שלי לא ברשימה"));
+  const sel = el("select", { class: "t" }, el("option", { value: "" }, tasks.length ? "אחר — לא משימה מסוימת" : "כללי"),
+    tasks.map((t) => el("option", { value: t.id, selected: t.id === taskId ? true : null }, taskLabel(t))));
+  const teamBox = el("div", { class: "team" });
+  const drawTeam = () => {
+    teamBox.textContent = "";
+    const t = tasks.find((x) => x.id === sel.value);
+    if (!t || !t.team || !roster.length) return;
+    teamBox.append(el("label", { class: "f" }, "חברי הצוות שהגישו איתי ", el("small", {}, "· כולם יסומנו כמי שהגישו")),
+      el("div", { class: "team-list" }, roster.filter((x) => x.id !== who.value).map((x) =>
+        el("label", { class: "pill" }, el("input", { type: "checkbox", value: x.id }), x.name))));
+  };
+  const nameRow = el("div");
+  const drawName = () => { nameRow.textContent = ""; if (roster.length && who.value === "-") nameRow.append(field("השם המלא", name)); };
+  who.addEventListener("change", () => { drawName(); drawTeam(); });
+  sel.addEventListener("change", drawTeam);
+  drawName(); drawTeam();
+  const taskInfo = el("div");
+  const drawInfo = () => { taskInfo.textContent = ""; const t = tasks.find((x) => x.id === sel.value); if (t && t.about) taskInfo.append(el("div", { class: "aside", style: "margin-top:10px;padding:12px 16px" }, rich(t.about))); };
+  sel.addEventListener("change", drawInfo); drawInfo();
   const title = el("input", { class: "t", placeholder: "למשל: עבודה מסכמת, תרגיל 2" });
   const note = el("textarea", { class: "t", style: "min-height:90px", placeholder: "משהו שחשוב לך שהמרצה תדע" });
   const link = el("input", { class: "t", dir: "ltr", type: "url", placeholder: "https://... (לא חובה)" });
@@ -1288,26 +1378,30 @@ function viewSubmit(page, lessonId){
   send.addEventListener("click", async () => {
     out.textContent = "";
     const bad = (t) => out.append(el("div", { class: "msg err" }, t));
-    if (!name.value.trim()) return bad("צריך לכתוב שם.");
+    const me = roster.length && who.value && who.value !== "-" ? who.value : "";
+    if (roster.length && !who.value) return bad("צריך לבחור את השם שלך מהרשימה.");
+    if (!me && !name.value.trim()) return bad("צריך לכתוב שם.");
+    const mates = [...teamBox.querySelectorAll("input:checked")].map((x) => x.value);
     const url = link.value.trim();
     if (!fd.files.length && !url) return bad("צריך לצרף קובץ או קישור.");
     if (url && !/^https?:\/\/\S+\.\S+/.test(url)) return bad("הקישור צריך להתחיל ב-https://");
-    store.set(NAMEKEY, name.value.trim());
+    if (me) store.set(MEKEY, me); else store.set(NAMEKEY, name.value.trim());
     send.disabled = true; prog.hidden = false;
     try {
       const ups = [];
       const total = fd.files.reduce((s, f) => s + f.size, 0) || 1; let done = 0;
       for (const f of fd.files) { ups.push(await upload(f, "sub", (p) => prog.firstChild.style.width = Math.round((done + p * f.size) / total * 100) + "%")); done += f.size; }
-      const d = await call("submit", { name: name.value, lessonId: sel.value, title: title.value, note: note.value, link: url, files: ups });
+      const d = await call("submit", { name: me ? "" : name.value, studentIds: me ? [me, ...mates] : [], taskId: sel.value, title: title.value, note: note.value, link: url, files: ups });
       if (!d.ok) throw new Error(errText(d));
       out.append(el("div", { class: "msg ok" }, "ההגשה התקבלה. " + lecturerName() + " תראה אותה בתיבת ההגשות."));
-      fd.reset(); title.value = note.value = link.value = "";
+      fd.reset(); title.value = note.value = link.value = ""; teamBox.querySelectorAll("input").forEach((x) => x.checked = false);
       loadMine();
     } catch(e){ if (e.message !== "login") bad(e.message); }
     send.disabled = false; prog.hidden = true; prog.firstChild.style.width = "0";
   });
   const form = el("div", { class: "card" },
-    el("div", { class: "two" }, field("שם", name), field("לאיזה שיעור", sel)),
+    roster.length ? el("div", { class: "two" }, field("השם שלי", who), field("המשימה", sel)) : el("div", { class: "two" }, field("שם", name), field("המשימה", sel)),
+    roster.length ? nameRow : null, taskInfo, teamBox,
     field("כותרת", title, "לא חובה"),
     el("label", { class: "f" }, "קבצים"), fd.node,
     field("או קישור", link, "Drive, Canva, אתר"),
@@ -1345,7 +1439,7 @@ function subCard(s, lect, after){
   return el("div", { class: "entry" + (lect && !s.seen ? " unseen" : "") }, lect ? avatar(s.name) : null,
     el("div", { class: "entry-main" },
       el("div", { class: "entry-h" }, el("b", {}, lect ? s.name : (s.title || "הגשה")), el("span", {}, fmtWhen(s.at)),
-        s.lessonTitle ? el("span", { class: "tag task" }, s.lessonTitle) : el("span", { class: "tag" }, "כללי"), lect && !s.seen ? el("span", { class: "tag new" }, "חדשה") : null),
+        s.taskTitle ? el("span", { class: "tag task" }, s.taskTitle) : s.lessonTitle ? el("span", { class: "tag" }, s.lessonTitle) : el("span", { class: "tag" }, "כללי"), lect && !s.seen ? el("span", { class: "tag new" }, "חדשה") : null),
       lect && s.title ? el("div", { style: "font-weight:600;margin-top:4px" }, s.title) : null,
       s.note ? el("p", { class: "entry-text" }, s.note) : null, files, acts));
 }
@@ -1397,7 +1491,179 @@ function viewWrite(page){
   page.append(wrap);
 }
 
-/* ── למרצה: תיבת ההגשות ── */
+/* ── משימות ופנקס ── */
+const ilDate = (iso) => new Date(iso).toLocaleDateString("en-CA", { timeZone: "Asia/Jerusalem" }); // YYYY-MM-DD בשעון ישראל
+const todayIL = () => ilDate(new Date().toISOString());
+const isLate = (t, at) => !!(t && t.due && ilDate(at) > t.due);
+const isOverdue = (t) => !!(t && t.due && todayIL() > t.due);
+// שורת משימה: למרצה — עריכה ומחיקה; לסטודנטים — הסבר וכפתור הגשה. done = האם הגשתי (מהמכשיר הזה)
+function taskRow(t, done){
+  const lesson = C.lessons.find((l) => l.id === t.lessonId);
+  const meta = el("div", { class: "item-s" },
+    t.due ? el("span", { class: "tag " + (isOverdue(t) ? "" : "date") }, "עד " + fmtDate(t.due)) : el("span", { class: "tag" }, "בלי מועד"),
+    t.team ? el("span", { class: "tag task" }, "משימת צוות") : null,
+    lesson ? el("span", { class: "tag" }, lesson.title) : null,
+    done ? el("span", { class: "tag ok" }, "✓ הגשת") : null);
+  const acts = el("div", { class: "item-acts" });
+  if (L()) acts.append(el("button", { class: "mini edit", onclick: () => taskEditor(t) }, line("edit"), "עריכה"),
+    el("button", { class: "mini del", onclick: async () => {
+      if (!(await confirmBox("מחיקת המשימה", "המשימה והציונים שלה יוסרו מהפנקס. ההגשות עצמן נשארות בתיבת ההגשות."))) return;
+      if (apply(await call("taskDelete", { id: t.id }))) { route(); toast("נמחקה"); }
+    } }, line("trash"), "מחיקה"));
+  else acts.append(el("button", { class: "btn sm", onclick: () => go("submit=" + t.id) }, icon("upload"), done ? "הגשה נוספת" : "להגשה"));
+  return el("div", { class: "item" }, el("span", { class: "ft", style: "--c:#6A4FA3", "aria-hidden": "true", html: LINE.check + "<span>משימה</span>" }),
+    el("div", { class: "item-main" }, el("div", { class: "item-t" }, t.title), meta, t.about ? el("div", { class: "item-note" }, t.about) : null), acts);
+}
+function taskEditor(t, lessonId){
+  const title = el("input", { class: "t", value: t ? t.title : "", placeholder: "למשל: תרגיל 1, עבודה מסכמת" });
+  const due = el("input", { class: "t", type: "date", value: t ? t.due : "" });
+  const about = el("textarea", { class: "t", style: "min-height:90px", placeholder: "מה צריך להגיש, היקף, דגשים" }, t ? t.about || "" : "");
+  const team = el("input", { type: "checkbox", checked: t && t.team ? true : null });
+  const les = el("select", { class: "t" }, el("option", { value: "" }, "—"),
+    C.lessons.map((l, i) => el("option", { value: l.id, selected: l.id === (t ? t.lessonId : lessonId) ? true : null }, pad2(i + 1) + " · " + l.title)));
+  const err = el("div", { class: "msg err" }); err.hidden = true;
+  dialog(t ? "עריכת משימה" : "משימה חדשה", "notebook", [field("שם המשימה", title), el("div", { class: "two" }, field("מועד הגשה", due, "לא חובה"), field("שיעור קשור", les, "לא חובה")),
+    field("הסבר לסטודנטים", about, "לא חובה"), el("label", { class: "check" }, team, "משימת צוות — מי שמגיש/ה מסמן/ת גם את חברי הצוות"), err], (close) => [
+    el("button", { class: "btn", onclick: async () => {
+      const d = await call("taskSave", { task: { id: t ? t.id : undefined, title: title.value, due: due.value, about: about.value, team: team.checked, lessonId: les.value } });
+      if (apply(d)) { close(); route(); toast("נשמר"); } else { err.textContent = d.error === "name" ? "צריך לתת למשימה שם." : errText(d); err.hidden = false; }
+    } }, t ? "שמירה" : "הוספה"),
+    el("button", { class: "btn ghost", onclick: close }, "ביטול")]);
+}
+function rosterDialog(){
+  const ta = el("textarea", { class: "t", style: "min-height:200px", placeholder: "שם אחד בכל שורה. אפשר להדביק רשימה מאקסל או מהמייל." });
+  dialog("הוספת סטודנטים", "notebook", [field("שמות", ta, "שם בכל שורה"), el("p", { class: "hint" }, "שמות שכבר ברשימה לא יתווספו פעמיים. הסטודנטים יבחרו את השם שלהם כשהם מגישים.")], (close) => [
+    el("button", { class: "btn", onclick: async () => { if (apply(await call("rosterAdd", { text: ta.value }))) { close(); route(); toast("הרשימה עודכנה"); } } }, "הוספה"),
+    el("button", { class: "btn ghost", onclick: close }, "ביטול")]);
+}
+
+async function viewBook(page){
+  const wrap = el("div", { class: "wrap", style: "padding-top:26px" });
+  wrap.append(el("div", { class: "page-h" }, icon("notebook"), el("div", {}, el("h1", {}, "הפנקס"),
+    el("p", { class: "sub" }, "משימות, מי הגיש ומתי, ציונים והערות. מתעדכן לבד כשסטודנטים מגישים. רק את רואה אותו."))));
+  page.append(wrap);
+  const loading = el("div", { class: "loading" }, el("div", { class: "spin" })); wrap.append(loading);
+  const B = await call("book", {});
+  loading.remove();
+  if (!B.grades) { wrap.append(el("div", { class: "msg err" }, errText(B))); return; }
+  const tasks = C.tasks || [], roster = C.roster || [];
+  const byTaskStudent = (tid, sid) => B.subs.filter((x) => x.taskId === tid && (x.studentIds || []).includes(sid)).sort((a, b) => String(a.at).localeCompare(String(b.at)));
+
+  // 1. משימות
+  const tcard = el("div", { class: "card" }, el("div", { class: "card-h" }, icon("notebook"), el("div", { class: "grow" }, el("h2", {}, "משימות"),
+    el("p", { class: "sub" }, tasks.length ? tasks.length + " משימות" : "מוסיפים משימה — והסטודנטים יבחרו בה כשהם מגישים")),
+    el("button", { class: "btn sm", onclick: () => taskEditor(null) }, icon("plus"), "משימה חדשה")));
+  if (!tasks.length) tcard.append(el("div", { class: "empty" }, "עוד אין משימות."));
+  const tl = el("div", { class: "items" });
+  tasks.forEach((t) => {
+    const r = taskRow(t);
+    const done = roster.filter((x) => byTaskStudent(t.id, x.id).length).length;
+    r.querySelector(".item-s").append(el("span", { class: "tag ok" }, done + "/" + roster.length + " הגישו"));
+    tl.append(r);
+  });
+  tcard.append(tl);
+  wrap.append(tcard);
+
+  // 2. הטבלה: סטודנטים × משימות
+  const gcard = el("div", { class: "card" }, el("div", { class: "card-h" }, icon("inbox"), el("div", { class: "grow" }, el("h2", {}, "מעקב וציונים"),
+    el("p", { class: "sub" }, roster.length ? roster.length + " סטודנטים · ✓ הוגש · ⏰ באיחור · ✗ חסר (המועד עבר)" : "מוסיפים את שמות הסטודנטים — והפנקס יתמלא לבד")),
+    el("div", { class: "row" }, el("button", { class: "btn sm", onclick: rosterDialog }, icon("plus"), "הוספת סטודנטים"),
+      roster.length && tasks.length ? el("button", { class: "btn ghost sm", onclick: () => exportCsv(B, byTaskStudent) }, line("down"), "ייצוא לאקסל") : null)));
+  if (!roster.length) gcard.append(el("div", { class: "empty" }, "עוד אין סטודנטים ברשימה."));
+  else {
+    const table = el("table", { class: "book" });
+    const hr = el("tr", {}, el("th", { class: "nm" }, "סטודנט/ית"));
+    tasks.forEach((t) => hr.append(el("th", {}, el("div", { class: "th-t" }, t.title), el("div", { class: "th-s" }, (t.due ? "עד " + fmtDue(t.due) : "") + (t.team ? " · צוות" : "")))));
+    if (tasks.length) hr.append(el("th", {}, "ממוצע"));
+    table.append(el("thead", {}, hr));
+    const tb = el("tbody");
+    roster.forEach((x) => {
+      const note = B.studentNotes[x.id];
+      const tr = el("tr", {}, el("th", { class: "nm" }, el("button", { class: "who", onclick: () => studentDialog(x, B, byTaskStudent) }, x.name, note ? el("span", { class: "has-note", title: note }, " 📝") : null)));
+      const avgCell = el("td", { class: "avg" });
+      const drawAvg = () => { const nums = tasks.map((t) => parseFloat((B.grades[t.id] || {})[x.id])).filter((n) => !isNaN(n));
+        avgCell.textContent = nums.length ? (nums.reduce((a, b) => a + b, 0) / nums.length).toFixed(1).replace(/\.0$/, "") : "—"; };
+      tasks.forEach((t) => {
+        const subs = byTaskStudent(t.id, x.id), last = subs[subs.length - 1];
+        const g = (B.grades[t.id] || {})[x.id] || "";
+        const st = last ? el("button", { class: "st " + (isLate(t, last.at) ? "late" : "ok"), title: "צפייה בהגשה", onclick: () => showSubs(subs) },
+            (isLate(t, last.at) ? "⏰ " : "✓ ") + fmtDue(ilDate(last.at)))
+          : el("span", { class: "st " + (isOverdue(t) ? "miss" : "none") }, isOverdue(t) ? "✗ חסר" : "—");
+        const gi = el("input", { class: "grade", value: g, placeholder: "ציון", "aria-label": "ציון של " + x.name + " ב" + t.title });
+        gi.addEventListener("change", async () => {
+          const d = await call("gradeSet", { taskId: t.id, studentId: x.id, grade: gi.value });
+          if (d.ok) { (B.grades[t.id] ||= {})[x.id] = gi.value.trim(); drawAvg(); gi.classList.add("saved"); setTimeout(() => gi.classList.remove("saved"), 900); } else toast(errText(d));
+        });
+        tr.append(el("td", {}, st, gi));
+      });
+      if (tasks.length) { drawAvg(); tr.append(avgCell); }
+      tb.append(tr);
+    });
+    table.append(tb);
+    gcard.append(el("div", { class: "book-wrap" }, table));
+  }
+  wrap.append(gcard);
+
+  // 3. הגשות שלא שויכו לשם מהרשימה
+  const loose = roster.length ? B.subs.filter((x) => !(x.studentIds || []).length) : [];
+  if (loose.length) {
+    const lc = el("div", { class: "card" }, el("div", { class: "card-h" }, icon("inbox"), el("div", { class: "grow" }, el("h2", {}, "הגשות לשיוך"),
+      el("p", { class: "sub" }, "הגשות של שמות שלא ברשימה. בוחרים למי שייכת ההגשה — והפנקס מתעדכן."))));
+    loose.forEach((x) => {
+      const who = el("select", { class: "t" }, el("option", { value: "" }, "למי שייכת?"), roster.map((r) => el("option", { value: r.id }, r.name)));
+      const tk = el("select", { class: "t" }, el("option", { value: "" }, "בלי משימה"), tasks.map((t) => el("option", { value: t.id, selected: t.id === x.taskId ? true : null }, t.title)));
+      lc.append(el("div", { class: "item" }, el("div", { class: "item-main" }, el("div", { class: "item-t" }, x.name), el("div", { class: "item-s" }, fmtWhen(x.at), x.taskTitle ? el("span", {}, x.taskTitle) : null)),
+        el("div", { class: "row", style: "flex:1;min-width:260px" }, who, tk, el("button", { class: "btn sm", onclick: async () => {
+          if (!who.value) { toast("בחרי שם מהרשימה"); return; }
+          const d = await call("subAssign", { id: x.id, studentIds: [who.value], taskId: tk.value }); if (d.ok) { toast("שויך"); route(); }
+        } }, "שיוך"))));
+    });
+    wrap.append(lc);
+  }
+
+  // 4. הפנקס שלי — הערות לעצמי, נשמר לבד
+  const ta = el("textarea", { class: "t", style: "min-height:180px", placeholder: "תזכורות, רעיונות לשיעור הבא, מה לבדוק..." }, B.notes || "");
+  const state = el("span", { class: "hint", style: "margin:0" });
+  let timer = null;
+  ta.addEventListener("input", () => { state.textContent = "..."; clearTimeout(timer); timer = setTimeout(async () => { const d = await call("notesSave", { notes: ta.value }); state.textContent = d.ok ? "נשמר ✓" : errText(d); }, 900); });
+  wrap.append(el("div", { class: "card" }, el("div", { class: "card-h" }, icon("sparkle"), el("div", { class: "grow" }, el("h2", {}, "הערות לעצמי"), el("p", { class: "sub" }, "נשמר לבד בזמן הכתיבה")), state), ta));
+}
+function showSubs(subs){
+  const box = el("div");
+  [...subs].reverse().forEach((x) => box.append(subCard(x, true, () => route())));
+  dialog("ההגשה", "inbox", box, (close) => [el("button", { class: "btn ghost", onclick: close }, "סגירה")]);
+}
+function studentDialog(x, B, byTaskStudent){
+  const name = el("input", { class: "t", value: x.name });
+  const note = el("textarea", { class: "t", style: "min-height:100px", placeholder: "הערה לעצמך — רק את רואה" }, B.studentNotes[x.id] || "");
+  const list = el("ul", { class: "board-list" });
+  (C.tasks || []).forEach((t) => { const subs = byTaskStudent(t.id, x.id); const g = (B.grades[t.id] || {})[x.id];
+    list.append(el("li", { style: "cursor:default" }, el("div", { style: "flex:1" }, el("div", { class: "bl-t" }, t.title),
+      el("div", { class: "bl-s" }, subs.length ? "הוגש " + fmtWhen(subs[subs.length - 1].at) + (isLate(t, subs[subs.length - 1].at) ? " · באיחור" : "") : isOverdue(t) ? "לא הוגש" : "עוד לא הוגש")),
+      g ? el("span", { class: "tag ok" }, "ציון " + g) : null)); });
+  dialog(x.name, "notebook", [field("שם", name), field("הערה", note), (C.tasks || []).length ? el("div", {}, el("label", { class: "f" }, "משימות"), list) : null], (close) => [
+    el("button", { class: "btn", onclick: async () => {
+      if (name.value.trim() !== x.name) { const d = await call("rosterRename", { id: x.id, name: name.value }); if (!apply(d)) return; }
+      await call("studentNote", { studentId: x.id, note: note.value });
+      close(); route(); toast("נשמר");
+    } }, "שמירה"),
+    el("button", { class: "btn danger", onclick: async () => {
+      if (!(await confirmBox("הסרה מהרשימה", x.name + " יוסר/תוסר מהרשימה. ההגשות נשארות בתיבת ההגשות."))) return;
+      if (apply(await call("rosterRemove", { id: x.id }))) { close(); route(); }
+    } }, "הסרה מהרשימה"),
+    el("button", { class: "btn ghost", onclick: close }, "ביטול")]);
+}
+function exportCsv(B, byTaskStudent){
+  const q = (v) => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+  const tasks = C.tasks || [];
+  const rows = [["שם", ...tasks.flatMap((t) => [t.title + " — הגשה", t.title + " — ציון"]), "הערה"]];
+  (C.roster || []).forEach((x) => rows.push([x.name, ...tasks.flatMap((t) => { const s = byTaskStudent(t.id, x.id), last = s[s.length - 1];
+    return [last ? fmtDate(last.at) + (isLate(t, last.at) ? " (באיחור)" : "") : isOverdue(t) ? "חסר" : "", (B.grades[t.id] || {})[x.id] || ""]; }), B.studentNotes[x.id] || ""]));
+  const blob = new Blob(["﻿" + rows.map((r) => r.map(q).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const a = el("a", { href: URL.createObjectURL(blob), download: "פנקס - " + (C.title || "קורס") + ".csv" }); document.body.append(a); a.click(); a.remove();
+}
+
+/* ── תיבת ההגשות ── */
 async function viewSubs(page){
   const wrap = el("div", { class: "narrow", style: "padding-top:26px" });
   wrap.append(el("div", { class: "page-h" }, icon("inbox"), el("div", {}, el("h1", {}, "תיבת ההגשות"), el("p", { class: "sub" }, "רק את/ה רואה את ההגשות. אפשר לסנן לפי שיעור."))));
@@ -1408,11 +1674,12 @@ async function viewSubs(page){
   let all = [], cur = "*";
   const draw = () => {
     filters.textContent = "";
-    const keys = [["*", "הכול", all.length], ["new", "חדשות", all.filter((s) => !s.seen).length], ["", "כללי", all.filter((s) => !s.lessonId).length]];
-    C.lessons.forEach((l, i) => { const n = all.filter((s) => s.lessonId === l.id).length; if (n) keys.push([l.id, pad2(i + 1) + " " + l.title, n]); });
+    const keys = [["*", "הכול", all.length], ["new", "חדשות", all.filter((s) => !s.seen).length]];
+    (C.tasks || []).forEach((t) => { const n = all.filter((s) => s.taskId === t.id).length; if (n) keys.push([t.id, t.title, n]); });
+    keys.push(["", "בלי משימה", all.filter((s) => !s.taskId).length]);
     for (const [k, label, n] of keys) if (k === "*" || n) filters.append(el("button", { class: cur === k ? "on" : "", onclick: () => { cur = k; draw(); } }, label + " (" + n + ")"));
     box.textContent = "";
-    const shown = all.filter((s) => cur === "*" || (cur === "new" ? !s.seen : s.lessonId === cur));
+    const shown = all.filter((s) => cur === "*" || (cur === "new" ? !s.seen : (s.taskId || "") === cur));
     if (!shown.length) { box.append(el("div", { class: "empty" }, all.length ? "אין הגשות בסינון הזה." : "עוד אין הגשות. כשסטודנטים יגישו — הן יופיעו כאן.")); return; }
     shown.forEach((s) => box.append(subCard(s, true, load)));
   };

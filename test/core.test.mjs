@@ -107,3 +107,43 @@ test('בלי LECTURER_CODE אין כניסת מרצה', async () => {
   const [st] = await api({ action: 'login', code: '' });
   assert.equal(st, 403);
 });
+
+test('פנקס: רשימת סטודנטים, משימות, הגשת צוות, ציונים והערות', async () => {
+  const { api } = setup();
+  let [st, r] = await api({ action: 'login', code: 'ADVA-START-01' }); const lec = r.token;
+  [st, r] = await api({ action: 'courseCreate', token: lec, title: 'קורס' }); const cid = r.created; const code = r.courses[0].studentCode;
+  [st, r] = await api({ action: 'rosterAdd', cid, token: lec, text: 'נועה כהן\nדנה לוי\n\nנועה כהן\nיעל ברק' }); assert.equal(r.roster.length, 3);
+  const id = (n) => r.roster.find((x) => x.name === n).id;
+  const noa = id('נועה כהן'), dana = id('דנה לוי'), yael = id('יעל ברק');
+  [st, r] = await api({ action: 'taskSave', cid, token: lec, task: { title: 'עבודת צוות', due: '2026-11-20', team: true } }); const team = r.tasks[0].id;
+  [st, r] = await api({ action: 'taskSave', cid, token: lec, task: { title: 'תרגיל 1', due: '2026-11-01' } }); const ex1 = r.tasks.find((t) => t.title === 'תרגיל 1').id;
+  assert.equal(r.tasks[0].id, ex1); // ממוין לפי מועד
+
+  [st, r] = await api({ action: 'login', code }); const stu = r.token;
+  [st, r] = await api({ action: 'get', cid, token: stu }); assert.equal(r.roster.length, 3); assert.equal(r.tasks.length, 2);
+  [st, r] = await api({ action: 'rosterAdd', cid, token: stu, text: 'x' }); assert.equal(st, 403);
+  [st, r] = await api({ action: 'book', cid, token: stu }); assert.equal(st, 403);
+  // הגשת צוות: נועה ודנה
+  [st, r] = await api({ action: 'submit', cid, token: stu, studentIds: [noa, dana, 'zzz'], taskId: team, link: 'https://drive.example.com/x' });
+  assert.deepEqual(r.sub.studentIds, [noa, dana]); assert.equal(r.sub.name, 'נועה כהן, דנה לוי'); assert.equal(r.sub.taskTitle, 'עבודת צוות');
+  // משימה אישית: רק הראשונה נספרת
+  [st, r] = await api({ action: 'submit', cid, token: stu, studentIds: [yael, noa], taskId: ex1, link: 'https://x.example.com' });
+  assert.deepEqual(r.sub.studentIds, [yael]);
+  // שם שלא ברשימה
+  [st, r] = await api({ action: 'submit', cid, token: stu, name: 'מישהי חדשה', taskId: ex1, link: 'https://y.example.com' }); const loose = r.sub.id;
+  assert.deepEqual(r.sub.studentIds, []);
+  [st, r] = await api({ action: 'subAssign', cid, token: lec, id: loose, studentIds: [noa], taskId: ex1 }); assert.equal(r.sub.name, 'נועה כהן');
+
+  [st, r] = await api({ action: 'dashboard', token: lec });
+  const t = r.courses[0].tasks; assert.equal(t.find((x) => x.id === team).done, 2); assert.equal(t.find((x) => x.id === ex1).done, 2);
+  assert.equal(r.courses[0].students, 3);
+
+  [st, r] = await api({ action: 'gradeSet', cid, token: lec, taskId: team, studentId: noa, grade: '95' }); assert.equal(st, 200);
+  [st, r] = await api({ action: 'notesSave', cid, token: lec, notes: 'לזכור: לבדוק את ההגשות עד שישי' });
+  [st, r] = await api({ action: 'studentNote', cid, token: lec, studentId: dana, note: 'ביקשה הארכה' });
+  [st, r] = await api({ action: 'book', cid, token: lec });
+  assert.equal(r.grades[team][noa], '95'); assert.equal(r.notes, 'לזכור: לבדוק את ההגשות עד שישי'); assert.equal(r.studentNotes[dana], 'ביקשה הארכה'); assert.equal(r.subs.length, 3);
+  [st, r] = await api({ action: 'get', cid, token: stu }); assert.equal(JSON.stringify(r).includes('ביקשה הארכה'), false); assert.equal(JSON.stringify(r).includes('95'), false);
+  [st, r] = await api({ action: 'taskDelete', cid, token: lec, id: ex1 }); assert.equal(r.tasks.length, 1);
+  [st, r] = await api({ action: 'rosterRemove', cid, token: lec, id: yael }); assert.equal(r.roster.length, 2);
+});
