@@ -17,6 +17,8 @@ export default async (req) => {
       if (out instanceof ArrayBuffer) return new Response(out, { status, headers: { 'content-type': 'application/octet-stream', 'cache-control': 'private, max-age=600' } });
       return json(status, out);
     }
+    // GET /api?action=status — בדיקת הקמה בלבד (האם יש קוד מרצה ומה אורכו, בלי לחשוף אותו)
+    if (req.method === 'GET' && url.searchParams.get('action') === 'status') { const [st, out] = await handle({ action: 'status' }, ctx); return json(st, out); }
     if (req.method !== 'POST') return json(405, { error: 'POST only' });
     let body;
     try { body = await req.json(); } catch { return json(400, { error: 'invalid JSON' }); }
