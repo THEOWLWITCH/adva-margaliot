@@ -141,7 +141,7 @@ function cleanItem(x, cid) {
 const lessonView = (l) => ({ id: l.id, title: l.title, date: l.date || '', about: l.about || '', items: l.items || [], task: !!l.task });
 function courseView(c, lec, role) {
   const v = { id: c.id, title: c.title || '', about: c.about || '', lecturer: lec.name, syllabus: { text: c.syllabus?.text || '', items: c.syllabus?.items || [] },
-    lessons: (c.lessons || []).map(lessonView), role, updatedAt: c.updatedAt };
+    lessons: (c.lessons || []).map(lessonView), posts: c.posts || [], role, updatedAt: c.updatedAt };
   if (role === 'l') { v.studentCode = c.code || ''; v.email = lec.email || ''; }
   return v;
 }
@@ -212,6 +212,7 @@ export async function handle(body, ctx) {
     const paths = [];
     const take = (it) => { if (it && it.path) paths.push(it.path); };
     (c.syllabus?.items || []).forEach(take);
+    (c.posts || []).forEach((x) => take(x.file));
     (c.lessons || []).forEach((l) => (l.items || []).forEach(take));
     for (const x of await allFor(store, `sub:${c.id}:`)) (x.files || []).forEach(take);
     for (const m of await allFor(store, `msg:${c.id}:`)) take(m.file);
@@ -372,6 +373,31 @@ export async function handle(body, ctx) {
   // ── מכאן: עריכת הקורס — למרצה בלבד ──
   if (!L) return deny();
   const view = () => [200, courseView(course, lec, 'l')];
+
+  // ── לוח ההודעות של המרצה: טקסט, ואפשר לצרף תמונה/קובץ וקישור ──
+  if (action === 'postSave' || action === 'postDelete') {
+    course.posts ||= [];
+    const prev = course.posts.find((x) => x.id === body.post?.id || x.id === body.id);
+    if (action === 'postDelete') {
+      if (!prev) return [404, { error: 'missing' }];
+      course.posts = course.posts.filter((x) => x !== prev);
+      if (prev.file) await tryRemove([prev.file.path]);
+      await save();
+      return view();
+    }
+    const x = body.post || {};
+    const f = 'file' in x ? fileOf(x.file) : prev?.file || null;
+    const file = f && f.path.startsWith(`c/${cid}/mat/`) && safePath(f.path) ? f : null;
+    const post = { id: prev ? prev.id : Date.now().toString(36) + randId(4), title: line(x.title, 160), text: txt(x.text, 6000),
+      link: safeUrl(x.link), linkTitle: line(x.linkTitle, 160), file, pinned: !!x.pinned, at: prev ? prev.at : new Date().toISOString() };
+    if (prev) post.editedAt = new Date().toISOString();
+    if (!post.text && !post.file && !post.link) return [400, { error: 'empty' }];
+    if (prev && prev.file && (!file || prev.file.path !== file.path)) await tryRemove([prev.file.path]);
+    if (prev) course.posts[course.posts.indexOf(prev)] = post;
+    else { if (course.posts.length >= 100) return [400, { error: 'too-many' }]; course.posts.unshift(post); }
+    await save();
+    return view();
+  }
 
   if (action === 'save') {
     const p = body.patch || {};

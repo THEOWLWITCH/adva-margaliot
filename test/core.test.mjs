@@ -76,6 +76,17 @@ test('הזרימה המלאה: מרצה, קורס, שיעור, חומרים, ה�
   [st, r] = await api({ action: 'messages', cid, token: stu }); assert.equal(st, 403);
   [st, r] = await api({ action: 'dashboard', token: lec }); assert.equal(r.courses.find((c) => c.id === cid).newMsgs, 1);
 
+  // לוח ההודעות
+  [st, r] = await api({ action: 'postSave', cid, token: stu, post: { text: 'x' } }); assert.equal(st, 403);
+  [st, r] = await api({ action: 'postSave', cid, token: lec, post: {} }); assert.equal(st, 400);
+  [st, r] = await api({ action: 'upload', cid, token: lec, purpose: 'mat', name: 'תמונה.png', size: 10 }); const img = r.path;
+  [st, r] = await api({ action: 'postSave', cid, token: lec, post: { text: 'ברוכים הבאים', link: 'https://example.com', file: { path: img, name: 'תמונה.png', size: 10, type: 'image/png' } } });
+  assert.equal(r.posts.length, 1); const pid = r.posts[0].id;
+  [st, r] = await api({ action: 'get', cid, token: stu }); assert.equal(r.posts[0].text, 'ברוכים הבאים'); assert.equal(r.posts[0].file.path, img);
+  [st, r] = await api({ action: 'file', cid, token: stu, path: img }); assert.equal(st, 200);
+  [st, r] = await api({ action: 'postSave', cid, token: lec, post: { id: pid, text: 'עודכן', file: null } }); assert.equal(r.posts[0].text, 'עודכן'); assert.equal(r.posts[0].file, null);
+  assert.ok(removed.includes(img + '/0'));
+  [st, r] = await api({ action: 'postDelete', cid, token: lec, id: pid }); assert.equal(r.posts.length, 0);
   [st, r] = await api({ action: 'studentCode', cid, token: lec, code: 'adva-2026' }); assert.equal(r.studentCode, 'ADVA-2026');
   [st, r] = await api({ action: 'login', code }); assert.equal(st, 403);
   [st, r] = await api({ action: 'login', code: 'ADVA2026' }); assert.equal(r.cid, cid);
