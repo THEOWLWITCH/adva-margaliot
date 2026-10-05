@@ -458,7 +458,6 @@ function ftBadge(it){
   const f = FT[ftOf(it)];
   return el("span", { class: "ft", style: `--c:${f.c}`, "aria-hidden": "true", html: LINE[f.icon] + `<span>${f.label}</span>` });
 }
-const isOffice = (it) => /\.(docx?|pptx?|xlsx?)$/i.test(it.name || "");
 const isInline = (it) => /\.(pdf|png|jpe?g|gif|webp|svg|mp4|webm|mov|mp3|m4a|wav|ogg|txt)$/i.test(it.name || "");
 
 // איור לכל שיעור — 8 קומפוזיציות מתחלפות בצבעי הספר הירוק
@@ -569,30 +568,51 @@ const ERR = {
 };
 const errText = (d) => ERR[d.error] || "משהו השתבש. נסו שוב.";
 
-// העלאת קובץ: כתובת חתומה מהשרת, ואז העלאה ישירה עם התקדמות
+// העלאת קובץ: כרטיס מהשרת, ואז העלאה בחלקים של עד 3MB (מגבלת הבקשה לשרת), עם התקדמות
 async function upload(file, purpose, onProgress){
   const d = await call("upload", { purpose, name: file.name, size: file.size, type: file.type });
-  if (!d.uploadUrl) throw new Error(d.error === "too-big" ? "הקובץ \"" + file.name + "\" גדול מ-" + fmtSize(d.max) + "." : errText(d));
-  await new Promise((res, rej) => {
-    const x = new XMLHttpRequest();
-    x.open("PUT", d.uploadUrl);
-    x.setRequestHeader("content-type", file.type || "application/octet-stream");
-    x.upload.onprogress = (e) => { if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total); };
-    x.onload = () => x.status >= 200 && x.status < 300 ? res() : rej(new Error("ההעלאה נכשלה (" + x.status + ")."));
-    x.onerror = () => rej(new Error("ההעלאה נכשלה. בדקו את החיבור ונסו שוב."));
-    x.send(file);
-  });
+  if (!d.ticket) throw new Error(d.error === "too-big" ? "הקובץ \"" + file.name + "\" גדול מ-" + fmtSize(d.max) + "." : errText(d));
+  for (let n = 0; n < d.parts; n++) {
+    const part = file.slice(n * d.chunk, Math.min(file.size, (n + 1) * d.chunk));
+    let ok = false;
+    for (let attempt = 0; attempt < 3 && !ok; attempt++) { // ניסיון חוזר על חלק שנכשל (רשת חלשה)
+      await new Promise((res) => {
+        const x = new XMLHttpRequest();
+        x.open("PUT", API + "/chunk?n=" + n);
+        x.setRequestHeader("x-ticket", d.ticket);
+        x.setRequestHeader("content-type", "application/octet-stream");
+        x.upload.onprogress = (e) => { if (e.lengthComputable && onProgress) onProgress((n * d.chunk + e.loaded) / file.size); };
+        x.onload = () => { ok = x.status >= 200 && x.status < 300; res(); };
+        x.onerror = () => res();
+        x.send(part);
+      });
+    }
+    if (!ok) throw new Error("ההעלאה של \"" + file.name + "\" נכשלה. בדקו את החיבור ונסו שוב.");
+  }
+  if (onProgress) onProgress(1);
   return { path: d.path, name: file.name, size: file.size, type: file.type };
 }
-// צפייה / הורדה: כתובת חתומה קצרת מועד. החלון נפתח מיד (כדי שהדפדפן לא יחסום), והכתובת נטענת אחר כך.
+// צפייה / הורדה: הקובץ נטען בחלקים עם כרטיס קצר מועד, ונפתח מהדפדפן.
+// החלון לצפייה נפתח מיד (כדי שהדפדפן לא יחסום אותו), והקובץ נטען לתוכו כשהוא מוכן.
 async function openFile(it, download){
   const w = download ? null : window.open("", "_blank");
   if (w) { try { w.document.write('<p dir="rtl" style="font-family:Assistant,Arial;padding:30px;color:#4A6359">פותחת את הקובץ...</p>'); } catch(e){} }
-  const d = await call("file", { path: it.path, download: download ? it.name : "" });
-  if (!d.url) { if (w) w.close(); toast(d.error === "missing" ? "הקובץ לא נמצא." : errText(d)); return; }
-  if (download) { const a = el("a", { href: d.url, download: it.name }); document.body.append(a); a.click(); a.remove(); return; }
-  const url = isOffice(it) && !isInline(it) ? "https://view.officeapps.live.com/op/view.aspx?src=" + encodeURIComponent(d.url) : d.url;
-  if (w) w.location.href = url; else location.href = url;
+  if (download) toast("מורידה את \"" + it.name + "\"...");
+  try {
+    const d = await call("file", { path: it.path });
+    if (!d.ticket) throw new Error(d.error === "missing" ? "הקובץ לא נמצא." : errText(d));
+    const parts = [];
+    for (let n = 0; n < d.parts; n++) {
+      const r = await fetch(API + "/chunk?n=" + n, { headers: { "x-ticket": d.ticket } });
+      if (!r.ok) throw new Error("הקובץ לא נטען. נסו שוב.");
+      parts.push(await r.blob());
+    }
+    const blob = new Blob(parts, { type: d.type || it.type || "application/octet-stream" });
+    const url = URL.createObjectURL(blob);
+    if (w) w.location.href = url;
+    else { const a = el("a", { href: url, download: it.name }); document.body.append(a); a.click(); a.remove(); }
+    setTimeout(() => URL.revokeObjectURL(url), 10 * 60e3);
+  } catch(e){ if (w) w.close(); if (e.message !== "login") toast(e.message); }
 }
 
 /* ───────── חלון כללי ───────── */
@@ -906,8 +926,8 @@ function itemsList(where, items){
   items.forEach((it, i) => {
     const acts = el("div", { class: "item-acts" });
     if (it.kind === "file") {
-      acts.append(el("button", { class: "mini view", onclick: () => openFile(it, false) }, line("eye"), "צפייה"),
-        el("button", { class: "mini down", onclick: () => openFile(it, true) }, line("down"), "הורדה"));
+      if (isInline(it)) acts.append(el("button", { class: "mini view", onclick: () => openFile(it, false) }, line("eye"), "צפייה"));
+      acts.append(el("button", { class: "mini down", onclick: () => openFile(it, true) }, line("down"), "הורדה"));
     } else {
       acts.append(el("a", { class: "mini view", href: it.url, target: "_blank", rel: "noopener" }, line("open"), "פתיחה"));
     }
@@ -948,7 +968,7 @@ function itemsList(where, items){
     box.append(el("div", { class: "adder" },
       el("button", { class: "btn sm", onclick: () => pick.click() }, line("file"), "הוספת קבצים"),
       el("button", { class: "btn sky sm", onclick: () => editItem(where, null) }, line("link"), "הוספת קישור"), pick),
-      prog, status, el("p", { class: "hint" }, "קבצים עד 50MB: PDF, Word, מצגות, תמונות, וידאו. סרטון ארוך — עדיף קישור (YouTube, Drive)."));
+      prog, status, el("p", { class: "hint" }, "קבצים עד 50MB: PDF, Word, מצגות, תמונות, וידאו. PDF ותמונות נפתחים לצפייה בדפדפן, ושאר הקבצים — להורדה. סרטון ארוך — עדיף קישור (YouTube, Drive)."));
   }
   return box;
 }
@@ -1009,7 +1029,7 @@ function viewLesson(page, id){
       el("div", { class: "row", style: "margin-top:8px" }, l.date ? el("span", { class: "datechip" }, icon("calendar"), fmtDate(l.date)) : null, l.task ? el("span", { class: "tag task" }, "יש מטלה להגשה") : null),
       tools)));
   if (l.about) wrap.append(el("div", { class: "card" }, rich(l.about)));
-  const mats = el("div", { class: "card" }, el("div", { class: "card-h" }, icon("layers"), el("div", { class: "grow" }, el("h3", {}, "חומרי השיעור"), el("p", { class: "sub" }, "צפייה בדפדפן או הורדה למחשב"))));
+  const mats = el("div", { class: "card" }, el("div", { class: "card-h" }, icon("layers"), el("div", { class: "grow" }, el("h3", {}, "חומרי השיעור"), el("p", { class: "sub" }, "צפייה בדפדפן או הורדה"))));
   mats.append(itemsList(l.id, l.items || []));
   wrap.append(mats);
   if (l.task || !L()) wrap.append(el("div", { class: "card", style: "display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--section)" }, icon("upload"),
@@ -1153,7 +1173,7 @@ const avatar = (name) => { const n = String(name || "?").trim(); let h = 0; for 
 function subCard(s, lect, after){
   const files = el("div", { class: "entry-files" });
   for (const f of s.files || []) files.append(el("div", { class: "entry-file" }, ftBadge({ kind: "file", ...f }), el("span", { class: "nm" }, f.name + (f.size ? " · " + fmtSize(f.size) : "")),
-    el("button", { class: "mini view", onclick: () => openFile(f, false) }, line("eye"), "צפייה"), el("button", { class: "mini down", onclick: () => openFile(f, true) }, line("down"), "הורדה")));
+    isInline(f) ? el("button", { class: "mini view", onclick: () => openFile(f, false) }, line("eye"), "צפייה") : null, el("button", { class: "mini down", onclick: () => openFile(f, true) }, line("down"), "הורדה")));
   if (s.link) files.append(el("div", { class: "entry-file" }, ftBadge({ kind: "link", url: s.link }), el("span", { class: "nm", dir: "ltr" }, s.link), el("a", { class: "mini view", href: s.link, target: "_blank", rel: "noopener" }, line("open"), "פתיחה")));
   const acts = el("div", { class: "entry-acts" });
   if (lect) {
@@ -1256,7 +1276,7 @@ async function viewInbox(page){
     for (const m of msgs) {
       const files = el("div", { class: "entry-files" });
       if (m.file) files.append(el("div", { class: "entry-file" }, ftBadge({ kind: "file", ...m.file }), el("span", { class: "nm" }, m.file.name + (m.file.size ? " · " + fmtSize(m.file.size) : "")),
-        el("button", { class: "mini view", onclick: () => openFile(m.file, false) }, line("eye"), "צפייה"), el("button", { class: "mini down", onclick: () => openFile(m.file, true) }, line("down"), "הורדה")));
+        isInline(m.file) ? el("button", { class: "mini view", onclick: () => openFile(m.file, false) }, line("eye"), "צפייה") : null, el("button", { class: "mini down", onclick: () => openFile(m.file, true) }, line("down"), "הורדה")));
       if (m.link) files.append(el("div", { class: "entry-file" }, ftBadge({ kind: "link", url: m.link }), el("span", { class: "nm", dir: "ltr" }, m.link), el("a", { class: "mini view", href: m.link, target: "_blank", rel: "noopener" }, line("open"), "פתיחה")));
       const acts = el("div", { class: "entry-acts" });
       if (m.email) acts.append(el("a", { class: "mini view", href: "mailto:" + m.email + "?subject=" + encodeURIComponent("תשובה: " + (C.title || "הקורס")) }, line("reply"), "תשובה במייל"));

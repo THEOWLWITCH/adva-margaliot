@@ -1,7 +1,7 @@
 // בדיקות ללוגיקת השרת, עם מאגר בזיכרון ואחסון קבצים מדומה: node --test test/
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { handle } from '../netlify/functions/lib/core.mjs';
+import { handle, handleChunk, CHUNK } from '../netlify/functions/lib/core.mjs';
 
 function setup(env = { LECTURER_CODE: 'ADVA-START-01' }) {
   const m = new Map(), removed = [];
@@ -12,17 +12,20 @@ function setup(env = { LECTURER_CODE: 'ADVA-START-01' }) {
     async list(p) { return [...m.keys()].filter((k) => k.startsWith(p)).sort().map((k) => ({ key: k, value: structuredClone(m.get(k)) })); },
     async delPrefix(p) { for (const k of [...m.keys()]) if (k.startsWith(p)) m.delete(k); },
   };
+  const blobs = new Map();
   const files = {
-    async uploadUrl(p) { return 'https://up/' + p; },
-    async signedUrl(p, s, d) { return 'https://dl/' + p + (d ? '?download=' + d : ''); },
-    async remove(ps) { removed.push(...ps); },
+    async put(k, b) { blobs.set(k, b); },
+    async get(k) { return blobs.get(k) || null; },
+    async del(k) { blobs.delete(k); removed.push(k); },
   };
-  const api = (body) => handle(body, { store, files, env, siteUrl: 'https://site' });
-  return { api, m, removed };
+  const ctx = { store, files, env, siteUrl: 'https://site' };
+  const api = (body) => handle(body, ctx);
+  const chunk = (method, ticket, n, bytes) => handleChunk(method, ticket, n, bytes, ctx);
+  return { api, m, removed, blobs, chunk };
 }
 
 test('הזרימה המלאה: מרצה, קורס, שיעור, חומרים, הגשה והודעה', async () => {
-  const { api, m, removed } = setup();
+  const { api, m, removed, chunk } = setup();
   let [st, r] = await api({ action: 'login', code: 'wrong' }); assert.equal(st, 403);
   [st, r] = await api({ action: 'login', code: 'adva-start-01' }); assert.equal(r.role, 'l'); const lec = r.token;
   [st, r] = await api({ action: 'dashboard', token: lec }); assert.equal(r.courses.length, 0); assert.equal(r.lecturer.email, 'adva_m@achva.ac.il');
@@ -41,15 +44,26 @@ test('הזרימה המלאה: מרצה, קורס, שיעור, חומרים, ה�
   [st, r] = await api({ action: 'upload', cid, token: stu, purpose: 'mat', name: 'a.pdf', size: 10 }); assert.equal(st, 403);
   [st, r] = await api({ action: 'upload', cid, token: lec, purpose: 'mat', name: 'מצגת.PPTX', size: 10 }); assert.match(r.path, /^c\/\w+\/mat\/\w+\.pptx$/);
   const mat = r.path;
+  [st] = await chunk('PUT', r.ticket, 0, new ArrayBuffer(10)); assert.equal(st, 200);
   [st, r] = await api({ action: 'itemSave', cid, token: lec, where: L1, item: { kind: 'file', path: mat, name: 'מצגת.pptx', size: 10 } }); assert.equal(r.lessons[0].items.length, 1);
   [st, r] = await api({ action: 'itemSave', cid, token: lec, where: L1, item: { kind: 'file', path: `c/${cid2}/mat/abcdefgh.pdf`, name: 'x' } }); assert.equal(st, 400);
   [st, r] = await api({ action: 'itemSave', cid, token: lec, where: L1, item: { kind: 'link', url: 'javascript:alert(1)' } }); assert.equal(st, 400);
   [st, r] = await api({ action: 'itemSave', cid, token: lec, where: 'syllabus', item: { kind: 'link', url: 'https://example.com/a', title: 'רשימת קריאה' } }); assert.equal(r.syllabus.items.length, 1);
-  [st, r] = await api({ action: 'file', cid, token: stu, path: mat }); assert.equal(st, 200);
+  [st, r] = await api({ action: 'file', cid, token: stu, path: mat }); assert.equal(st, 200); assert.equal(r.parts, 1);
+  [st, r] = await chunk('GET', r.ticket, 0); assert.equal(st, 200); assert.equal(r.byteLength, 10);
+  [st] = await chunk('GET', 'bad.ticket', 0); assert.equal(st, 403);
 
   [st, r] = await api({ action: 'upload', cid, token: stu, purpose: 'sub', name: 'עבודה.docx', size: 30 * 1024 * 1024 }); assert.equal(st, 413);
-  [st, r] = await api({ action: 'upload', cid, token: stu, purpose: 'sub', name: 'עבודה.docx', size: 100 }); const sp = r.path; assert.ok(sp.includes('/sub/' + sid + '/'));
-  [st, r] = await api({ action: 'submit', cid, token: stu, name: 'נועה', lessonId: L1, files: [{ path: sp, name: 'עבודה.docx', size: 100 }] }); assert.equal(st, 200);
+  const big = CHUNK * 2 + 5;
+  [st, r] = await api({ action: 'upload', cid, token: stu, purpose: 'sub', name: 'עבודה.docx', size: big }); const sp = r.path; assert.ok(sp.includes('/sub/' + sid + '/'));
+  assert.equal(r.parts, 3);
+  [st] = await chunk('PUT', r.ticket, 0, new ArrayBuffer(CHUNK)); assert.equal(st, 200);
+  [st] = await chunk('PUT', r.ticket, 1, new ArrayBuffer(CHUNK)); assert.equal(st, 200);
+  [st] = await chunk('PUT', r.ticket, 2, new ArrayBuffer(6)); assert.equal(st, 400); // גודל לא נכון
+  [st] = await chunk('PUT', r.ticket, 2, new ArrayBuffer(5)); assert.equal(st, 200);
+  [st] = await chunk('PUT', r.ticket, 3, new ArrayBuffer(5)); assert.equal(st, 403); // אין חלק כזה
+  [st, r] = await api({ action: 'get', cid, token: r.ticket }); assert.equal(st, 401); // כרטיס אינו כניסה
+  [st, r] = await api({ action: 'submit', cid, token: stu, name: 'נועה', lessonId: L1, files: [{ path: sp, name: 'עבודה.docx', size: big }] }); assert.equal(st, 200);
   [st, r] = await api({ action: 'submit', cid, token: stu, name: 'נועה', files: [{ path: `c/${cid}/sub/ffffffffffffffff/x.pdf` }] }); assert.equal(st, 400);
   [st, r] = await api({ action: 'subs', cid, token: stu }); assert.equal(st, 403);
   [st, r] = await api({ action: 'mySubs', cid, token: stu }); assert.equal(r.subs.length, 1);
@@ -72,7 +86,7 @@ test('הזרימה המלאה: מרצה, קורס, שיעור, חומרים, ה�
   [st, r] = await api({ action: 'login', code: 'newlectcode' }); assert.equal(r.role, 'l');
 
   [st, r] = await api({ action: 'courseDelete', token: lec, cid }); assert.equal(r.courses.length, 1);
-  assert.ok(removed.includes(mat) && removed.includes(sp));
+  assert.ok(removed.includes(mat + '/0') && removed.includes(sp + '/2'));
   assert.equal([...m.keys()].filter((k) => k.includes(cid)).length, 0);
   [st, r] = await api({ action: 'login', code: 'ADVA2026' }); assert.equal(st, 403);
 });

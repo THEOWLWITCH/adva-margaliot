@@ -23,42 +23,33 @@
 
 ```
 public/index.html                   כל האתר (דף אחד)
-netlify/functions/api.mjs           השרת: POST /api
+netlify/functions/api.mjs           השרת: POST /api, וחלקי קבצים ב-/api/chunk
 netlify/functions/lib/core.mjs      הלוגיקה: קודים, הרשאות, קורסים, הגשות, הודעות
-netlify/functions/lib/supabase.mjs  שמירת הנתונים והקבצים ב-Supabase
-supabase.sql                        יצירת הטבלה
+netlify/functions/lib/blobs.mjs     שמירה ב-Netlify Blobs (נתונים וקבצים)
 test/core.test.mjs                  בדיקות (npm test)
 ```
 
+הנתונים והקבצים נשמרים ב-**Netlify Blobs**, כחלק מהאתר עצמו. אין צורך בשירות נוסף.
+
 ## הקמה — פעם אחת
 
-### 1. Supabase — נתונים וקבצים
-1. יוצרים פרויקט חדש ב-[supabase.com](https://supabase.com). התוכנית החינמית מספיקה.
-2. **SQL Editor → New query:** מדביקים את התוכן של `supabase.sql` ולוחצים **Run**.
-3. **Project Settings → API:** מעתיקים את **Project URL** ואת המפתח **service_role**.
-   - המפתח הזה סודי. הוא נכנס רק למשתני הסביבה ב-Netlify.
-
-דלי הקבצים (`course-files`, פרטי) נוצר אוטומטית בהעלאה הראשונה.
-
-### 2. Netlify — האתר והשרת
-1. **Add new site → Import an existing project:** בוחרים את המאגר הזה ב-GitHub. ההגדרות נקראות מ-`netlify.toml`.
-2. **Site configuration → Environment variables:** מוסיפים את המשתנים האלה.
+### 1. Netlify — האתר, השרת והשמירה
+1. **Add new site → Import an existing project → GitHub:** בוחרים את המאגר `adva-margaliot`. ההגדרות נקראות מ-`netlify.toml`.
+2. **Site configuration → Environment variables:** מוסיפים משתנה אחד.
 
 | משתנה | מה זה |
 |---|---|
-| `SUPABASE_URL` | ה-Project URL מ-Supabase |
-| `SUPABASE_SERVICE_KEY` | המפתח service_role |
 | `LECTURER_CODE` | קוד המרצה הראשון: לפחות 8 אותיות לטיניות וספרות, למשל `ADVA-7K2M-Q9`. אחרי הכניסה אפשר להחליף אותו באתר |
-| `RESEND_API_KEY` | לשליחת ההודעות למייל (שלב 3) |
-| `MAIL_FROM` | השולח, למשל `קורסים <courses@your-domain.co.il>` |
 
 3. **Deploys → Trigger deploy.**
 
-### 3. Resend — הודעות למייל
+### 2. Resend — הודעות למייל (אפשר גם אחר כך)
 1. פותחים חשבון ב-[resend.com](https://resend.com) ומאמתים דומיין שולח.
-2. יוצרים API key, ומכניסים את `RESEND_API_KEY` ואת `MAIL_FROM` ב-Netlify.
+2. ב-Netlify מוסיפים שני משתנים:
+   - `RESEND_API_KEY`
+   - `MAIL_FROM` — השולח, למשל `קורסים <courses@your-domain.co.il>`
 
-עד שהשלב הזה מוכן, ההודעות נשמרות באתר בתיבת "הודעות", ולא הולכות לאיבוד.
+עד שהשלב הזה מוכן, ההודעות נשמרות באתר בתיבת "הודעות", ולא הולכות לאיבוד. קובץ מצורף עד 8MB נשלח גם במייל.
 
 ## שימוש
 
@@ -71,7 +62,8 @@ test/core.test.mjs                  בדיקות (npm test)
 
 - קבצים של המרצה: עד 50MB לקובץ. הגשות: עד 25MB לקובץ, ועד 5 קבצים בהגשה. קובץ בהודעה: עד 15MB.
 - סרטון ארוך — עדיף להעלות כקישור (YouTube, Drive).
-- קבצים נפתחים בקישור חתום לרבע שעה בלבד. בלי קוד אי אפשר להגיע אליהם.
+- **צפייה בדפדפן:** PDF, תמונות, וידאו ושמע. **שאר הקבצים** (Word, מצגות) — להורדה.
+- הקבצים נטענים רק עם כניסה בקוד, ובכרטיס חתום לשעה.
 
 ## בדיקות
 

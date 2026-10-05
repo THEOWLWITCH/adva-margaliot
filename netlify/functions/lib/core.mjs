@@ -10,7 +10,10 @@
 //   code:<CODE>       → { cid }                       (קוד סטודנטים; CODE מנורמל)
 //   sub:<cid>:<id>    → הגשה    { id, sid, name, lessonId, lessonTitle, title, note, link, files, at, seen }
 //   msg:<cid>:<id>    → הודעה   { id, sid, name, email, text, link, file, at, seen, mailed }
-// files: { uploadUrl(path), signedUrl(path, seconds, downloadName), remove(paths) }
+//   fm:<path>         → { size, type, parts }          (פרטי קובץ שהועלה)
+// files: { put(key, bytes), get(key) → ArrayBuffer|null, del(key) } — הקבצים נשמרים בחלקים
+//   של עד 3MB (<path>/<n>), כי בקשה לפונקציה מוגבלת ל-6MB. הדפדפן מעלה ומוריד חלק אחר חלק
+//   (/api/chunk) עם כרטיס חתום וקצר מועד.
 //   c/<cid>/mat/<rand>.<ext>          חומרי שיעור וסילבוס (כל מי שבקורס)
 //   c/<cid>/sub/<sid>/<rand>.<ext>    הגשות (המרצה, והסטודנט/ית שהגיש/ה)
 //   c/<cid>/msg/<sid>/<rand>.<ext>    קבצים בהודעות (המרצה, והשולח/ת)
@@ -18,6 +21,7 @@ import { randomBytes, createHmac, scryptSync, timingSafeEqual } from 'node:crypt
 
 export const DEFAULTS = { name: 'ד״ר אדוה מרגליות', email: 'adva_m@achva.ac.il' };
 const TOKEN_DAYS = 30;
+export const CHUNK = 3 * 1024 * 1024;
 const MB = 1024 * 1024;
 const LIMITS = { mat: 50 * MB, sub: 25 * MB, msg: 15 * MB };
 const MAX_COURSES = 60, MAX_LESSONS = 60, MAX_ITEMS = 80, MAX_SUB_FILES = 5;
@@ -45,7 +49,8 @@ async function secret(store) {
   return rec.secret;
 }
 async function sign(store, payload) {
-  const body = Buffer.from(JSON.stringify({ ...payload, exp: Date.now() + TOKEN_DAYS * 864e5 })).toString('base64url');
+  const ttl = payload.k ? 3600e3 : TOKEN_DAYS * 864e5; // כרטיס להעלאה/הורדה — שעה; כניסה — 30 יום
+  const body = Buffer.from(JSON.stringify({ ...payload, exp: Date.now() + ttl })).toString('base64url');
   return body + '.' + createHmac('sha256', await secret(store)).update(body).digest('base64url');
 }
 export async function verify(store, token) {
@@ -88,14 +93,14 @@ async function issueStudentCode(store, env, cid, wanted) {
 }
 
 // ── מייל למרצה (Resend). בלי RESEND_API_KEY / MAIL_FROM — ההודעה נשמרת באתר בלבד. ──
-async function mailLecturer(env, lec, course, msg, fileUrl, siteUrl) {
+async function mailLecturer(env, lec, course, msg, fileData, siteUrl) {
   if (!lec.email || !EMAIL_RE.test(lec.email) || !env.RESEND_API_KEY || !env.MAIL_FROM) return false;
   const when = new Date(msg.at).toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'short', timeStyle: 'short' });
   const site = siteUrl + '/?c=' + course.id + '#inbox';
   const ttl = course.title || 'הקורס';
   const rows = [['שם', msg.name], ['תאריך', when], ...(msg.email ? [['מייל לתשובה', msg.email]] : [])];
   const text = [`הודעה חדשה בקורס "${ttl}"`, '', ...rows.map(([k, v]) => `${k}: ${v}`), '', msg.text,
-    msg.link ? '\nקישור: ' + msg.link : '', msg.file ? `\nקובץ מצורף: ${msg.file.name}${fileUrl ? '\n' + fileUrl : ''}` : '',
+    msg.link ? '\nקישור: ' + msg.link : '', msg.file ? `\nקובץ מצורף: ${msg.file.name}${fileData ? '' : ' (לצפייה באתר)'}` : '',
     '\nכל ההודעות באתר: ' + site].join('\n');
   const btn = (href, label, bg) => `<a href="${esc(href)}" style="display:inline-block;background:${bg};color:#fff;text-decoration:none;padding:9px 18px;border-radius:999px;font-weight:700;margin:4px 0 4px 8px">${esc(label)}</a>`;
   const html = `<div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.7;color:#13372A;max-width:580px">
@@ -103,16 +108,16 @@ async function mailLecturer(env, lec, course, msg, fileUrl, siteUrl) {
 <h2 style="font-weight:400;color:#1E7B3A;margin:4px 0 14px">הודעה חדשה מ${esc(msg.name)}</h2>
 <table style="font-size:14px;color:#4A6359;margin-bottom:12px">${rows.map(([k, v]) => `<tr><td style="padding:2px 0 2px 14px">${esc(k)}</td><td style="color:#13372A">${esc(v)}</td></tr>`).join('')}</table>
 <div style="background:#EEF7F3;border-radius:12px;padding:14px 16px;white-space:pre-wrap">${esc(msg.text)}</div>
-<p>${msg.link ? btn(msg.link, 'לקישור ששלחו', '#1F5F99') : ''}${msg.file && fileUrl ? btn(fileUrl, 'לקובץ: ' + msg.file.name, '#6B3FA0') : ''}${btn(site, 'לכל ההודעות באתר', '#1E7B3A')}</p>
+<p>${msg.link ? btn(msg.link, 'לקישור ששלחו', '#1F5F99') : ''}${msg.file ? '<br><span style="font-size:14px;color:#4A6359">📎 ' + esc(msg.file.name) + (fileData ? ' — מצורף למייל' : ' — לצפייה באתר') + '</span><br>' : ''}${btn(site, 'לכל ההודעות באתר', '#1E7B3A')}</p>
 ${msg.email ? '<p style="font-size:13px;color:#4A6359">אפשר להשיב ישירות למייל הזה — התשובה תגיע ל' + esc(msg.email) + '.</p>' : ''}
 </div>`;
   const body = { from: env.MAIL_FROM, to: [lec.email], subject: `${ttl} — הודעה מ${msg.name}`, text, html };
   if (msg.email) body.reply_to = msg.email;
-  if (msg.file && fileUrl && msg.file.size <= 10 * MB) body.attachments = [{ filename: msg.file.name, path: fileUrl }];
+  if (msg.file && fileData) body.attachments = [{ filename: msg.file.name, content: Buffer.from(fileData).toString('base64') }];
   const send = () => fetch('https://api.resend.com/emails', { method: 'POST', headers: { authorization: 'Bearer ' + env.RESEND_API_KEY, 'content-type': 'application/json' }, body: JSON.stringify(body) });
   try {
     let r = await send();
-    if (!r.ok && body.attachments) { delete body.attachments; r = await send(); } // בלי צירוף — הקישור לקובץ בגוף ההודעה
+    if (!r.ok && body.attachments) { delete body.attachments; r = await send(); } // בלי צירוף — הקובץ נשאר באתר
     return r.ok;
   } catch { return false; }
 }
@@ -155,7 +160,15 @@ async function courseCard(store, c) {
 export async function handle(body, ctx) {
   const { store, env = {} } = ctx;
   const getFiles = () => { if (!ctx.files) throw new Error('no storage'); return ctx.files; };
-  const tryRemove = async (paths) => { if (!paths.length) return; try { await getFiles().remove(paths); } catch (e) { console.error('files: ' + e.message); } };
+  const tryRemove = async (paths) => {
+    for (const p of paths) {
+      try {
+        const m = await store.get('fm:' + p);
+        for (let n = 0; n < (m ? m.parts : 1); n++) await getFiles().del(p + '/' + n);
+        await store.del('fm:' + p);
+      } catch (e) { console.error('files: ' + e.message); }
+    }
+  };
   const action = body && body.action;
 
   if (action === 'login') {
@@ -178,7 +191,7 @@ export async function handle(body, ctx) {
   }
 
   const t = await verify(store, body.token);
-  if (!t) { await pause(); return [401, { error: 'login' }]; }
+  if (!t || t.k) { await pause(); return [401, { error: 'login' }]; }
   const L = t.r === 'l';
   const deny = async () => { await pause(); return [403, { error: 'unauthorized' }]; };
 
@@ -264,8 +277,9 @@ export async function handle(body, ctx) {
     if (size > LIMITS[purpose]) return [413, { error: 'too-big', max: LIMITS[purpose] }];
     const ext = (String(body.name || '').match(/\.([a-z0-9]{1,8})$/i) || [, 'bin'])[1].toLowerCase();
     const path = purpose === 'mat' ? `c/${cid}/mat/${randId(14)}.${ext}` : `c/${cid}/${purpose}/${own}/${randId(14)}.${ext}`;
-    try { return [200, { path, uploadUrl: await getFiles().uploadUrl(path) }]; }
-    catch (e) { console.error('files: ' + e.message); return [503, { error: 'storage' }]; }
+    const parts = Math.ceil(size / CHUNK);
+    await store.set('fm:' + path, { size, parts, type: line(body.type, 120) });
+    return [200, { path, parts, chunk: CHUNK, ticket: await sign(store, { k: 'up', p: path, n: parts, z: size }) }];
   }
 
   // ── כתובת לצפייה או להורדה (15 דקות) ──
@@ -274,8 +288,9 @@ export async function handle(body, ctx) {
     const m = path.match(/^c\/([a-z0-9]+)\/(mat|sub|msg)\/(?:([a-z0-9]+)\/)?[a-z0-9]+\.[a-z0-9]+$/);
     if (!m || m[1] !== cid) return [400, { error: 'path' }];
     if (m[2] !== 'mat' && !L && m[3] !== sid) return deny();
-    try { return [200, { url: await getFiles().signedUrl(path, 15 * 60, body.download ? line(body.download, 160) || 'file' : '') }]; }
-    catch (e) { console.error('files: ' + e.message); return [404, { error: 'missing' }]; }
+    const fm = await store.get('fm:' + path);
+    if (!fm) return [404, { error: 'missing' }];
+    return [200, { ...fm, ticket: await sign(store, { k: 'dl', p: path, n: fm.parts }) }];
   }
 
   // ── הגשות: רק המרצה רואה (וכל סטודנט/ית — את מה שהגיש/ה מהמכשיר שלו/ה) ──
@@ -315,9 +330,18 @@ export async function handle(body, ctx) {
     const f = fileOf(body.file);
     const file = f && f.path.startsWith(`c/${cid}/msg/${own}/`) && safePath(f.path) ? f : null;
     const msg = { id: Date.now().toString(36) + randId(6), sid, name, email: EMAIL_RE.test(email) ? email : '', text, link: safeUrl(body.link), file, at: new Date().toISOString(), seen: false, mailed: false };
-    let fileUrl = '';
-    if (file) { try { fileUrl = await getFiles().signedUrl(file.path, 7 * 24 * 3600, file.name); } catch (e) { console.error('files: ' + e.message); } }
-    msg.mailed = await mailLecturer(env, lec, course, msg, fileUrl, ctx.siteUrl || '');
+    let fileData = null; // קובץ עד 8MB מצורף גם למייל
+    if (file) {
+      try {
+        const fm = await store.get('fm:' + file.path);
+        if (fm && fm.size <= 8 * MB) {
+          const bufs = [];
+          for (let n = 0; n < fm.parts; n++) { const b = await getFiles().get(file.path + '/' + n); if (!b) throw new Error('missing part'); bufs.push(Buffer.from(b)); }
+          fileData = Buffer.concat(bufs);
+        }
+      } catch (e) { console.error('files: ' + e.message); }
+    }
+    msg.mailed = await mailLecturer(env, lec, course, msg, fileData, ctx.siteUrl || '');
     await store.set(`msg:${cid}:${msg.id}`, msg);
     return [200, { ok: true, mailed: msg.mailed }];
   }
@@ -418,4 +442,25 @@ export async function handle(body, ctx) {
   }
 
   return [400, { error: 'unknown action' }];
+}
+
+// ── חלקי קבצים: PUT (העלאה) ו-GET (הורדה) של חלק n, עם כרטיס חתום ──
+// מחזיר [status, body], כש-body הוא ArrayBuffer בהורדה.
+export async function handleChunk(method, ticket, n, bytes, ctx) {
+  const t = await verify(ctx.store, ticket);
+  n = Number(n);
+  if (!t || !Number.isInteger(n) || n < 0 || n >= t.n || !safePath(t.p)) return [403, { error: 'ticket' }];
+  const key = t.p + '/' + n;
+  if (method === 'PUT') {
+    if (t.k !== 'up' || !bytes) return [403, { error: 'ticket' }];
+    const want = n < t.n - 1 ? CHUNK : t.z - CHUNK * (t.n - 1);
+    if (bytes.byteLength !== want) return [400, { error: 'size' }];
+    await ctx.files.put(key, bytes);
+    return [200, { ok: true }];
+  }
+  if (method === 'GET' && t.k === 'dl') {
+    const b = await ctx.files.get(key);
+    return b ? [200, b] : [404, { error: 'missing' }];
+  }
+  return [405, { error: 'method' }];
 }
