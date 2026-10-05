@@ -653,7 +653,7 @@ async function renderGate(note){
     btn.disabled = true; btn.textContent = "בודקת...";
     const d = await post("login", { code: c, sid: store.get(SIDKEY) || "" }, { token: "-" });
     btn.disabled = false; btn.textContent = "כניסה";
-    if (!d.token) { err.textContent = d.error === "down" ? ERR.down : "הקוד לא מוכר. בדקו שהוא הוקלד נכון."; err.hidden = false; return; }
+    if (!d.token) { err.textContent = d.error === "down" ? ERR.down : d.setup ? "קוד המרצה עוד לא הוגדר באתר. ב-Netlify: Environment variables → LECTURER_CODE, ואחר כך Trigger deploy." : "הקוד לא מוכר. בדקו שהוא הוקלד נכון."; err.hidden = false; return; }
     store.set(SIDKEY, d.sid);
     const sess = { token: d.token, role: d.role, code: keep.checked ? c : undefined };
     if (d.role === "l") { store.set(LECT, sess); location.href = location.pathname + (CID ? "?c=" + CID : ""); return; }

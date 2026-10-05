@@ -180,7 +180,13 @@ export async function handle(body, ctx) {
     }
     const rec = c ? await store.get('code:' + c) : null;
     const course = rec ? await store.get('course:' + rec.cid) : null;
-    if (!course) { await pause(); return [403, { error: 'wrong' }]; }
+    if (!course) {
+      await pause();
+      // עדיין אין קוד מרצה בכלל (לא נקבע באתר ולא ב-LECTURER_CODE) — אומרים את זה, כדי שיהיה ברור מה חסר
+      const l = await lecturer(store, env);
+      const setup = !l.hash && !(env.LECTURER_CODE && normCode(env.LECTURER_CODE).length >= 6);
+      return [403, { error: 'wrong', ...(setup ? { setup: true } : {}) }];
+    }
     return [200, { ok: true, role: 's', cid: course.id, token: await sign(store, { r: 's', cid: course.id, s: sid }), sid, title: course.title || '' }];
   }
 
