@@ -315,21 +315,22 @@ export async function handle(body, ctx) {
 
   // ── הגשות: רק המרצה רואה (וכל סטודנט/ית — את מה שהגיש/ה מהמכשיר שלו/ה) ──
   if (action === 'submit') {
-    const name = line(body.name, 120);
-    if (!name && !(Array.isArray(body.studentIds) && body.studentIds.length)) return [400, { error: 'name' }];
     const fl = (Array.isArray(body.files) ? body.files : []).slice(0, MAX_SUB_FILES).map(fileOf)
       .filter((f) => f && f.path.startsWith(`c/${cid}/sub/${own}/`) && safePath(f.path));
     const link = safeUrl(body.link);
     if (!fl.length && !link) return [400, { error: 'empty' }];
+    // כל הגשה: שם מרשימת הקורס ומשימה — כך הפנקס מתעדכן לבד. בלי זה ההגשה לא נשמרת.
     const task = (course.tasks || []).find((t) => t.id === body.taskId);
+    if (!task) return [400, { error: 'task' }];
     const lesson = (course.lessons || []).find((l) => l.id === (task ? task.lessonId : body.lessonId));
     // מי הגיש/ה: מהרשימה של המרצה. במשימת צוות — כל חברי הצוות שסומנו.
     const roster = new Set((course.roster || []).map((x) => x.id));
     let studentIds = (Array.isArray(body.studentIds) ? body.studentIds : []).filter((x) => roster.has(x));
     studentIds = [...new Set(task && task.team ? studentIds : studentIds.slice(0, 1))].slice(0, 12);
+    if (!studentIds.length) return [400, { error: 'name' }];
     const names = studentIds.map((x) => course.roster.find((y) => y.id === x).name);
-    const sub = { id: Date.now().toString(36) + randId(6), sid, name: names.length ? names.join(', ') : name, studentIds,
-      taskId: task ? task.id : '', taskTitle: task ? task.title : '', lessonId: lesson ? lesson.id : '', lessonTitle: lesson ? lesson.title : '',
+    const sub = { id: Date.now().toString(36) + randId(6), sid, name: names.join(', '), studentIds,
+      taskId: task.id, taskTitle: task.title, lessonId: lesson ? lesson.id : '', lessonTitle: lesson ? lesson.title : '',
       title: line(body.title, 200), note: txt(body.note, 2000), link, files: fl, at: new Date().toISOString(), seen: false };
     await store.set(`sub:${cid}:${sub.id}`, sub);
     return [200, { ok: true, sub }];

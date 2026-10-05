@@ -1269,9 +1269,7 @@ function viewLesson(page, id){
     if (!lt.length) tc.append(el("div", { class: "empty" }, "אין עדיין משימות לשיעור הזה."));
     lt.forEach((t) => tc.append(taskRow(t)));
     wrap.append(tc);
-  } else wrap.append(el("div", { class: "card", style: "display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--section)" }, icon("upload"),
-    el("div", { style: "flex:1;min-width:200px" }, el("b", {}, "יש לך תוצר מהשיעור?"), el("div", { class: "muted", style: "font-size:14.5px" }, "ההגשה מגיעה רק ל" + lecturerName() + ".")),
-    el("button", { class: "btn", onclick: () => go("submit") }, "להגשה")));
+  }
   page.append(wrap);
 }
 
@@ -1357,11 +1355,16 @@ function viewSubmit(page, taskId){
   wrap.append(el("div", { class: "page-h" }, icon("upload"), el("div", {}, el("h1", {}, "הגשת תוצר"), el("p", { class: "sub" }, "ההגשה מגיעה רק ל" + lecturerName() + ". סטודנטים אחרים לא רואים אותה."))));
   // מי מגיש/ה: מהרשימה של המרצה (אם יש), ובמשימת צוות — גם חברי הצוות
   const roster = C.roster || [], tasks = C.tasks || [];
-  const name = el("input", { class: "t", value: store.get(NAMEKEY) || "", autocomplete: "name", placeholder: "השם המלא" });
-  const who = el("select", { class: "t" }, el("option", { value: "" }, "בחירה מהרשימה..."),
-    roster.map((x) => el("option", { value: x.id, selected: x.id === store.get(MEKEY) ? true : null }, x.name)),
-    el("option", { value: "-" }, "השם שלי לא ברשימה"));
-  const sel = el("select", { class: "t" }, el("option", { value: "" }, tasks.length ? "אחר — לא משימה מסוימת" : "כללי"),
+  // כל הגשה: שם מהרשימה + משימה. כך הפנקס של המרצה מתעדכן לבד.
+  if (!roster.length || !tasks.length) {
+    wrap.append(el("div", { class: "card", style: "text-align:center;padding:36px 24px" }, icon("notebook"),
+      el("h2", { style: "font:400 22px Heebo,sans-serif;margin:10px 0 6px" }, "עוד אי אפשר להגיש"),
+      el("p", { class: "muted", style: "margin:0" }, !tasks.length ? "המשימות להגשה יופיעו כאן כש" + lecturerName() + " תפרסם אותן." : "רשימת הסטודנטים של הקורס עוד לא הוזנה.")));
+    page.append(wrap); return;
+  }
+  const who = el("select", { class: "t" }, el("option", { value: "" }, "בחירת השם שלי..."),
+    roster.map((x) => el("option", { value: x.id, selected: x.id === store.get(MEKEY) ? true : null }, x.name)));
+  const sel = el("select", { class: "t" }, el("option", { value: "" }, "בחירת משימה..."),
     tasks.map((t) => el("option", { value: t.id, selected: t.id === taskId ? true : null }, taskLabel(t))));
   const teamBox = el("div", { class: "team" });
   const drawTeam = () => {
@@ -1372,11 +1375,9 @@ function viewSubmit(page, taskId){
       el("div", { class: "team-list" }, roster.filter((x) => x.id !== who.value).map((x) =>
         el("label", { class: "pill" }, el("input", { type: "checkbox", value: x.id }), x.name))));
   };
-  const nameRow = el("div");
-  const drawName = () => { nameRow.textContent = ""; if (roster.length && who.value === "-") nameRow.append(field("השם המלא", name, "", true)); };
-  who.addEventListener("change", () => { drawName(); drawTeam(); });
+  who.addEventListener("change", drawTeam);
   sel.addEventListener("change", drawTeam);
-  drawName(); drawTeam();
+  drawTeam();
   const taskInfo = el("div");
   const drawInfo = () => { taskInfo.textContent = ""; const t = tasks.find((x) => x.id === sel.value); if (t && t.about) taskInfo.append(el("div", { class: "aside", style: "margin-top:10px;padding:12px 16px" }, rich(t.about))); };
   sel.addEventListener("change", drawInfo); drawInfo();
@@ -1390,20 +1391,20 @@ function viewSubmit(page, taskId){
   send.addEventListener("click", async () => {
     out.textContent = "";
     const bad = (t) => out.append(el("div", { class: "msg err" }, t));
-    const me = roster.length && who.value && who.value !== "-" ? who.value : "";
-    if (roster.length && !who.value) { flag(who, who); return bad("צריך לבחור את השם שלך מהרשימה."); }
-    if (!me && !name.value.trim()) { flag(name, name); return bad("צריך לכתוב את השם המלא."); }
+    const me = who.value;
+    if (!me) { flag(who, who); return bad("צריך לבחור את השם שלך מהרשימה."); }
+    if (!sel.value) { flag(sel, sel); return bad("צריך לבחור לאיזו משימה שייכת ההגשה."); }
     const mates = [...teamBox.querySelectorAll("input:checked")].map((x) => x.value);
     const url = link.value.trim();
     if (!fd.files.length && !url) { flag(fd.node.firstChild); return bad("צריך לצרף קובץ או קישור — אחד מהם לפחות."); }
     if (url && !/^https?:\/\/\S+\.\S+/.test(url)) return bad("הקישור צריך להתחיל ב-https://");
-    if (me) store.set(MEKEY, me); else store.set(NAMEKEY, name.value.trim());
+    store.set(MEKEY, me);
     send.disabled = true; prog.hidden = false;
     try {
       const ups = [];
       const total = fd.files.reduce((s, f) => s + f.size, 0) || 1; let done = 0;
       for (const f of fd.files) { ups.push(await upload(f, "sub", (p) => prog.firstChild.style.width = Math.round((done + p * f.size) / total * 100) + "%")); done += f.size; }
-      const d = await call("submit", { name: me ? "" : name.value, studentIds: me ? [me, ...mates] : [], taskId: sel.value, title: title.value, note: note.value, link: url, files: ups });
+      const d = await call("submit", { studentIds: [me, ...mates], taskId: sel.value, title: title.value, note: note.value, link: url, files: ups });
       if (!d.ok) throw new Error(errText(d));
       out.append(el("div", { class: "msg ok" }, "ההגשה התקבלה. " + lecturerName() + " תראה אותה בתיבת ההגשות."));
       fd.reset(); title.value = note.value = link.value = ""; teamBox.querySelectorAll("input").forEach((x) => x.checked = false);
@@ -1412,8 +1413,9 @@ function viewSubmit(page, taskId){
     send.disabled = false; prog.hidden = true; prog.firstChild.style.width = "0";
   });
   const form = el("div", { class: "card" },
-    roster.length ? el("div", { class: "two" }, field("השם שלי", who, "", true), field("המשימה", sel)) : el("div", { class: "two" }, field("השם המלא", name, "", true), field("המשימה", sel)),
-    roster.length ? nameRow : null, taskInfo, teamBox,
+    el("div", { class: "two" }, field("השם שלי", who, "", true), field("המשימה", sel, "", true)),
+    el("p", { class: "hint", style: "margin-top:6px" }, "השם שלך לא מופיע ברשימה? פנו למזכירות הסטודנטים."),
+    taskInfo, teamBox,
     field("כותרת", title, "לא חובה"),
     el("label", { class: "f" }, "קבצים", el("span", { class: "req" }, "חובה — קובץ או קישור")), fd.node,
     field("או קישור", link, "Drive, Canva, אתר"),

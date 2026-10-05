@@ -63,11 +63,15 @@ test('הזרימה המלאה: מרצה, קורס, שיעור, חומרים, ה�
   [st] = await chunk('PUT', r.ticket, 2, new ArrayBuffer(5)); assert.equal(st, 200);
   [st] = await chunk('PUT', r.ticket, 3, new ArrayBuffer(5)); assert.equal(st, 403); // אין חלק כזה
   [st, r] = await api({ action: 'get', cid, token: r.ticket }); assert.equal(st, 401); // כרטיס אינו כניסה
-  [st, r] = await api({ action: 'submit', cid, token: stu, name: 'נועה', lessonId: L1, files: [{ path: sp, name: 'עבודה.docx', size: big }] }); assert.equal(st, 200);
-  [st, r] = await api({ action: 'submit', cid, token: stu, name: 'נועה', files: [{ path: `c/${cid}/sub/ffffffffffffffff/x.pdf` }] }); assert.equal(st, 400);
+  [st, r] = await api({ action: 'submit', cid, token: stu, name: 'נועה', files: [{ path: sp, name: 'עבודה.docx', size: big }] }); assert.equal(r.error, 'task'); // בלי משימה
+  [st, r] = await api({ action: 'rosterAdd', cid, token: lec, text: 'נועה כהן' }); const noaId = r.roster[0].id;
+  [st, r] = await api({ action: 'taskSave', cid, token: lec, task: { title: 'מטלה', lessonId: L1 } }); const T1 = r.tasks[0].id;
+  [st, r] = await api({ action: 'submit', cid, token: stu, name: 'נועה', taskId: T1, files: [{ path: sp, name: 'עבודה.docx', size: big }] }); assert.equal(r.error, 'name'); // שם חופשי לא מספיק
+  [st, r] = await api({ action: 'submit', cid, token: stu, studentIds: [noaId], taskId: T1, files: [{ path: sp, name: 'עבודה.docx', size: big }] }); assert.equal(st, 200);
+  [st, r] = await api({ action: 'submit', cid, token: stu, studentIds: [noaId], taskId: T1, files: [{ path: `c/${cid}/sub/ffffffffffffffff/x.pdf` }] }); assert.equal(st, 400);
   [st, r] = await api({ action: 'subs', cid, token: stu }); assert.equal(st, 403);
   [st, r] = await api({ action: 'mySubs', cid, token: stu }); assert.equal(r.subs.length, 1);
-  [st, r] = await api({ action: 'subs', cid, token: lec }); assert.equal(r.subs[0].lessonTitle, 'מבוא');
+  [st, r] = await api({ action: 'subs', cid, token: lec }); assert.equal(r.subs[0].lessonTitle, 'מבוא'); assert.equal(r.subs[0].name, 'נועה כהן');
   [st, r] = await api({ action: 'login', code }); const stu2 = r.token;
   [st, r] = await api({ action: 'file', cid, token: stu2, path: sp }); assert.equal(st, 403); // הגשה של מישהו אחר
   [st, r] = await api({ action: 'file', cid, token: lec, path: sp }); assert.equal(st, 200);
@@ -130,9 +134,9 @@ test('פנקס: רשימת סטודנטים, משימות, הגשת צוות, צ
   [st, r] = await api({ action: 'submit', cid, token: stu, studentIds: [yael, noa], taskId: ex1, link: 'https://x.example.com' });
   assert.deepEqual(r.sub.studentIds, [yael]);
   // שם שלא ברשימה
-  [st, r] = await api({ action: 'submit', cid, token: stu, name: 'מישהי חדשה', taskId: ex1, link: 'https://y.example.com' }); const loose = r.sub.id;
-  assert.deepEqual(r.sub.studentIds, []);
-  [st, r] = await api({ action: 'subAssign', cid, token: lec, id: loose, studentIds: [noa], taskId: ex1 }); assert.equal(r.sub.name, 'נועה כהן');
+  [st, r] = await api({ action: 'submit', cid, token: stu, name: 'מישהי חדשה', taskId: ex1, link: 'https://y.example.com' }); assert.equal(r.error, 'name');
+  [st, r] = await api({ action: 'submit', cid, token: stu, studentIds: [noa], link: 'https://y.example.com' }); assert.equal(r.error, 'task');
+  [st, r] = await api({ action: 'submit', cid, token: stu, studentIds: [noa], taskId: ex1, link: 'https://y.example.com' }); assert.equal(st, 200);
 
   [st, r] = await api({ action: 'dashboard', token: lec });
   const t = r.courses[0].tasks; assert.equal(t.find((x) => x.id === team).done, 2); assert.equal(t.find((x) => x.id === ex1).done, 2);
@@ -143,7 +147,7 @@ test('פנקס: רשימת סטודנטים, משימות, הגשת צוות, צ
   [st, r] = await api({ action: 'studentNote', cid, token: lec, studentId: dana, note: 'ביקשה הארכה' });
   [st, r] = await api({ action: 'book', cid, token: lec });
   assert.equal(r.grades[team][noa], '95'); assert.equal(r.notes, 'לזכור: לבדוק את ההגשות עד שישי'); assert.equal(r.studentNotes[dana], 'ביקשה הארכה'); assert.equal(r.subs.length, 3);
-  [st, r] = await api({ action: 'get', cid, token: stu }); assert.equal(JSON.stringify(r).includes('ביקשה הארכה'), false); assert.equal(JSON.stringify(r).includes('95'), false);
+  [st, r] = await api({ action: 'get', cid, token: stu }); assert.equal(JSON.stringify(r).includes('ביקשה הארכה'), false); assert.equal('grades' in r, false); assert.equal(JSON.stringify(r).includes('"grade'), false);
   [st, r] = await api({ action: 'taskDelete', cid, token: lec, id: ex1 }); assert.equal(r.tasks.length, 1);
   [st, r] = await api({ action: 'rosterRemove', cid, token: lec, id: yael }); assert.equal(r.roster.length, 2);
 });
