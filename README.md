@@ -43,13 +43,22 @@ test/core.test.mjs                  בדיקות (npm test)
 
 3. **Deploys → Trigger deploy.**
 
-### 2. Resend — הודעות למייל (אפשר גם אחר כך)
-1. פותחים חשבון ב-[resend.com](https://resend.com) ומאמתים דומיין שולח.
-2. ב-Netlify מוסיפים שני משתנים:
-   - `RESEND_API_KEY`
-   - `MAIL_FROM` — השולח, למשל `קורסים <courses@your-domain.co.il>`
+### 2. Resend — הודעות למייל
+1. **אדוה פותחת חשבון ב-[resend.com](https://resend.com)**, עם המייל שלה (adva_m@achva.ac.il).
+   - חשבון כזה שולח מיילים לכתובת של בעלת החשבון בלי הגדרת דומיין, וזה בדיוק מה שצריך.
+2. ב-Resend: **API Keys → Create API Key**, עם הרשאת Sending access.
+3. ב-Netlify מוסיפים שני משתנים:
+   - `RESEND_API_KEY` — המפתח
+   - `MAIL_FROM` — `Courses <onboarding@resend.dev>`
+4. **Trigger deploy.** בדיקה: בכתובת `/api?action=status` צריך להופיע `"mailReady":true`.
 
 עד שהשלב הזה מוכן, ההודעות נשמרות באתר בתיבת "הודעות", ולא הולכות לאיבוד. קובץ מצורף עד 8MB נשלח גם במייל.
+
+**שולח עם שם משלכן (לא חובה):** מאמתים דומיין ב-Resend, ומשנים את `MAIL_FROM` לכתובת בדומיין הזה.
+
+## בדיקת הקמה
+
+`https://adva-margaliot.netlify.app/api?action=status` מראה אם הוגדר קוד מרצה ומה האורך שלו (בלי הקוד עצמו), ואם המיילים מחוברים.
 
 ## שימוש
 
